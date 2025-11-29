@@ -12,7 +12,7 @@ INSERT INTO rooms (id, location_id, name, hourly_rate, active) VALUES
 
 -- Service Providers
 INSERT INTO service_providers (id, name, active) VALUES
-('33333333-3333-3333-3333-333333333301', 'Lady Lexi', true),
+('33333333-3333-3333-3333-333333333301', 'Lady Gaga', true),
 ('33333333-3333-3333-3333-333333333302', 'Mistress Bella', true),
 ('33333333-3333-3333-3333-333333333303', 'Domina Katja', true),
 ('33333333-3333-3333-3333-333333333304', 'Lady Sarah', true);

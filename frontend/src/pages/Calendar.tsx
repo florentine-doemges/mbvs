@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { format, addDays, subDays, parseISO } from 'date-fns'
 import { de } from 'date-fns/locale'
-import { useCalendar, useProviders } from '../hooks/useCalendar'
+import { useCalendar, useProviders, useUpdateBooking } from '../hooks/useCalendar'
 import { useRooms } from '../hooks/useRooms'
 import { useDurationOptions } from '../hooks/useDurationOptions'
 import { LOCATION_ID } from '../App'
@@ -22,6 +22,11 @@ interface ModalState {
   prefilledTime?: string
 }
 
+interface DragData {
+  booking: CalendarBooking
+  roomId: string
+}
+
 export default function Calendar() {
   const [selectedDate, setSelectedDate] = useState(new Date())
   const {
@@ -32,11 +37,14 @@ export default function Calendar() {
   const { data: rooms } = useRooms(LOCATION_ID)
   const { data: providers } = useProviders(LOCATION_ID)
   const { data: durationOptions } = useDurationOptions(LOCATION_ID)
+  const updateBookingMutation = useUpdateBooking(LOCATION_ID)
 
   const [modalState, setModalState] = useState<ModalState>({
     isOpen: false,
     mode: 'create',
   })
+  const [draggedBooking, setDraggedBooking] = useState<DragData | null>(null)
+  const [dropTarget, setDropTarget] = useState<{ roomId: string; time: string } | null>(null)
 
   const handlePrevDay = () => setSelectedDate(subDays(selectedDate, 1))
   const handleNextDay = () => setSelectedDate(addDays(selectedDate, 1))
@@ -63,6 +71,60 @@ export default function Calendar() {
 
   const handleCloseModal = () => {
     setModalState({ isOpen: false, mode: 'create' })
+  }
+
+  const handleDragStart = (booking: CalendarBooking, roomId: string) => {
+    setDraggedBooking({ booking, roomId })
+  }
+
+  const handleDragEnd = () => {
+    setDraggedBooking(null)
+    setDropTarget(null)
+  }
+
+  const handleDragOver = (e: React.DragEvent, roomId: string, timeSlot: string) => {
+    e.preventDefault()
+    setDropTarget({ roomId, time: timeSlot })
+  }
+
+  const handleDragLeave = () => {
+    setDropTarget(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent, roomId: string, timeSlot: string) => {
+    e.preventDefault()
+    setDropTarget(null)
+
+    if (!draggedBooking) return
+
+    const dateStr = format(selectedDate, 'yyyy-MM-dd')
+    const newStartTime = `${dateStr}T${timeSlot}:00`
+
+    // Don't update if dropped on the same slot
+    if (
+      draggedBooking.roomId === roomId &&
+      draggedBooking.booking.startTime === newStartTime
+    ) {
+      setDraggedBooking(null)
+      return
+    }
+
+    try {
+      await updateBookingMutation.mutateAsync({
+        id: draggedBooking.booking.id,
+        request: {
+          providerId: draggedBooking.booking.provider.id,
+          roomId: roomId,
+          startTime: newStartTime,
+          durationMinutes: draggedBooking.booking.durationMinutes,
+          clientAlias: draggedBooking.booking.clientAlias || '',
+        },
+      })
+    } catch (error) {
+      alert('Fehler beim Verschieben: ' + (error as Error).message)
+    } finally {
+      setDraggedBooking(null)
+    }
   }
 
   const getBookingAtSlot = (bookings: CalendarBooking[], slotIndex: number) => {
@@ -188,6 +250,8 @@ export default function Calendar() {
 
                   if (bookingInfo && bookingInfo.isStart) {
                     const style = getBookingStyle(room.color)
+                    const isDragging =
+                      draggedBooking?.booking.id === bookingInfo.booking.id
                     return (
                       <td
                         key={`${room.id}-${slot}`}
@@ -195,7 +259,12 @@ export default function Calendar() {
                         className="border-b border-r p-0"
                       >
                         <div
-                          className="border-2 rounded m-1 p-2 cursor-pointer text-xs h-[52px] overflow-hidden hover:opacity-80"
+                          draggable
+                          onDragStart={() => handleDragStart(bookingInfo.booking, room.id)}
+                          onDragEnd={handleDragEnd}
+                          className={`border-2 rounded m-1 p-2 cursor-move text-xs h-[52px] overflow-hidden hover:opacity-80 ${
+                            isDragging ? 'opacity-50' : ''
+                          }`}
                           style={style}
                           onClick={() => handleBookingClick(bookingInfo.booking, room.id)}
                         >
@@ -212,11 +281,21 @@ export default function Calendar() {
                     )
                   }
 
+                  const isDropTarget =
+                    dropTarget?.roomId === room.id && dropTarget?.time === slot
+
                   return (
                     <td
                       key={`${room.id}-${slot}`}
-                      className="border-b border-r min-h-[60px] h-[60px] hover:bg-gray-100 cursor-pointer"
+                      className={`border-b border-r min-h-[60px] h-[60px] cursor-pointer ${
+                        isDropTarget
+                          ? 'bg-blue-200 border-blue-400'
+                          : 'hover:bg-gray-100'
+                      }`}
                       onClick={() => handleSlotClick(room.id, slot)}
+                      onDragOver={(e) => handleDragOver(e, room.id, slot)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, room.id, slot)}
                     />
                   )
                 })}
