@@ -1,9 +1,17 @@
 package com.studio.booking.api
 
+import com.studio.booking.domain.Billing
+import com.studio.booking.domain.BillingItem
+import com.studio.booking.domain.BillingItemUpgrade
 import com.studio.booking.domain.Booking
+import com.studio.booking.domain.BookingUpgrade
 import com.studio.booking.domain.DurationOption
+import com.studio.booking.domain.Location
 import com.studio.booking.domain.Room
+import com.studio.booking.domain.RoomPrice
 import com.studio.booking.domain.ServiceProvider
+import com.studio.booking.domain.Upgrade
+import com.studio.booking.domain.UpgradePrice
 import com.studio.booking.service.BookingListItem
 import com.studio.booking.service.CalendarDay
 import com.studio.booking.service.ProviderInfo
@@ -57,6 +65,20 @@ fun DurationOption.toDto() =
         active = active,
     )
 
+fun Upgrade.toDto() =
+    UpgradeDto(
+        id = id,
+        name = name,
+        price = price,
+        active = active,
+    )
+
+fun BookingUpgrade.toDto() =
+    BookingUpgradeDto(
+        upgrade = upgrade.toDto(),
+        quantity = quantity,
+    )
+
 fun Booking.toDto() =
     BookingDto(
         id = id,
@@ -64,7 +86,9 @@ fun Booking.toDto() =
         room = room.toDto(),
         startTime = startTime,
         durationMinutes = durationMinutes,
+        restingTimeMinutes = restingTimeMinutes,
         clientAlias = clientAlias,
+        upgrades = bookingUpgrades.map { it.toDto() },
         createdAt = createdAt,
     )
 
@@ -73,8 +97,10 @@ fun Booking.toCalendarDto() =
         id = id,
         startTime = startTime,
         durationMinutes = durationMinutes,
+        restingTimeMinutes = restingTimeMinutes,
         provider = provider.toDto(),
         clientAlias = clientAlias,
+        upgrades = bookingUpgrades.map { it.toDto() },
     )
 
 fun RoomWithBookings.toDto() =
@@ -97,9 +123,11 @@ fun BookingListItem.toDto() =
         startTime = startTime,
         endTime = endTime,
         durationMinutes = durationMinutes,
+        restingTimeMinutes = restingTimeMinutes,
         clientAlias = clientAlias,
         provider = provider.toDto(),
         room = room.toDto(),
+        upgrades = upgrades.map { it.toDto() },
         status = status.name.lowercase(),
         totalPrice = totalPrice,
     )
@@ -117,4 +145,80 @@ fun RoomInfo.toDto() =
         name = name,
         color = color,
         hourlyRate = hourlyRate,
+    )
+
+fun Location.toDto() =
+    LocationDto(
+        id = id,
+        name = name,
+    )
+
+fun RoomPrice.toDto() =
+    RoomPriceDto(
+        id = id,
+        roomId = room.id,
+        price = price,
+        validFrom = validFrom,
+        validTo = validTo,
+        createdAt = createdAt,
+    )
+
+fun UpgradePrice.toDto() =
+    UpgradePriceDto(
+        id = id,
+        upgradeId = upgrade.id,
+        price = price,
+        validFrom = validFrom,
+        validTo = validTo,
+        createdAt = createdAt,
+    )
+
+fun Billing.toDto() =
+    BillingDto(
+        id = id,
+        serviceProvider = serviceProvider.toDto(),
+        periodStart = periodStart,
+        periodEnd = periodEnd,
+        totalAmount = totalAmount,
+        invoiceDocumentUrl = invoiceDocumentUrl,
+        createdAt = createdAt,
+        itemCount = items.size,
+    )
+
+fun Billing.toDetailDto() =
+    BillingDetailDto(
+        id = id,
+        serviceProvider = serviceProvider.toDto(),
+        periodStart = periodStart,
+        periodEnd = periodEnd,
+        totalAmount = totalAmount,
+        invoiceDocumentUrl = invoiceDocumentUrl,
+        createdAt = createdAt,
+        items = items.map { it.toDto() },
+    )
+
+fun BillingItem.toDto() =
+    BillingItemDto(
+        id = id,
+        bookingId = booking.id,
+        frozenStartTime = frozenStartTime,
+        frozenEndTime = frozenEndTime,
+        frozenDurationMinutes = frozenDurationMinutes,
+        frozenRestingTimeMinutes = frozenRestingTimeMinutes,
+        frozenClientAlias = frozenClientAlias,
+        frozenRoomName = frozenRoomName,
+        frozenRoomPriceAmount = frozenRoomPriceAmount,
+        subtotalRoom = subtotalRoom,
+        subtotalUpgrades = subtotalUpgrades,
+        totalAmount = totalAmount,
+        upgrades = upgrades.map { it.toDto() },
+    )
+
+fun BillingItemUpgrade.toDto() =
+    BillingItemUpgradeDto(
+        id = id,
+        frozenUpgradeName = frozenUpgradeName,
+        frozenQuantity = frozenQuantity,
+        frozenUpgradePriceAmount = frozenUpgradePriceAmount,
+        totalAmount = totalAmount,
     )

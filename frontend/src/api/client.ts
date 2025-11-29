@@ -6,14 +6,18 @@ import type {
   CreateDurationOptionRequest,
   CreateProviderRequest,
   CreateRoomRequest,
+  CreateUpgradeRequest,
   DurationOption,
   ErrorResponse,
+  Location,
   ProviderDetail,
   RoomDetail,
   UpdateBookingRequest,
   UpdateDurationOptionRequest,
   UpdateProviderRequest,
   UpdateRoomRequest,
+  UpdateUpgradeRequest,
+  Upgrade,
 } from './types'
 
 const API_BASE = '/api'
@@ -176,6 +180,54 @@ export async function deleteDurationOption(optionId: string): Promise<void> {
   }
 }
 
+// Locations
+export async function fetchLocation(locationId: string): Promise<Location> {
+  const response = await fetch(`${API_BASE}/locations/${locationId}`)
+  return handleResponse<Location>(response)
+}
+
+// Upgrades
+export async function fetchUpgrades(includeInactive = false): Promise<Upgrade[]> {
+  const response = await fetch(`${API_BASE}/upgrades?includeInactive=${includeInactive}`)
+  return handleResponse<Upgrade[]>(response)
+}
+
+export async function fetchUpgrade(upgradeId: string): Promise<Upgrade> {
+  const response = await fetch(`${API_BASE}/upgrades/${upgradeId}`)
+  return handleResponse<Upgrade>(response)
+}
+
+export async function createUpgrade(request: CreateUpgradeRequest): Promise<Upgrade> {
+  const response = await fetch(`${API_BASE}/upgrades`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  })
+  return handleResponse<Upgrade>(response)
+}
+
+export async function updateUpgrade(
+  upgradeId: string,
+  request: UpdateUpgradeRequest
+): Promise<Upgrade> {
+  const response = await fetch(`${API_BASE}/upgrades/${upgradeId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  })
+  return handleResponse<Upgrade>(response)
+}
+
+export async function deleteUpgrade(upgradeId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/upgrades/${upgradeId}`, {
+    method: 'DELETE',
+  })
+  if (!response.ok) {
+    const error = (await response.json()) as ErrorResponse
+    throw new Error(error.message)
+  }
+}
+
 // Calendar
 export async function fetchCalendar(locationId: string, date: string): Promise<CalendarDay> {
   const response = await fetch(
@@ -191,7 +243,7 @@ export async function fetchBookings(
 ): Promise<BookingListResponse> {
   const queryParams = new URLSearchParams(params)
   const response = await fetch(
-    `${API_BASE}/locations/${locationId}/bookings?${queryParams}`
+    `${API_BASE}/locations/${locationId}/bookings?${queryParams.toString()}`
   )
   return handleResponse<BookingListResponse>(response)
 }

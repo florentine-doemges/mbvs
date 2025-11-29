@@ -1,4 +1,6 @@
 import { NavLink } from 'react-router-dom'
+import { useLocation } from '../hooks/useLocation'
+import { LOCATION_ID } from '../App'
 
 interface SidebarProps {
   isOpen: boolean
@@ -10,10 +12,12 @@ const menuItems = [
   { path: '/bookings', label: 'Buchungen', icon: '📋' },
   { path: '/rooms', label: 'Räume', icon: '🚪' },
   { path: '/providers', label: 'Provider', icon: '👤' },
+  { path: '/upgrades', label: 'Upgrades', icon: '✨' },
   { path: '/settings', label: 'Einstellungen', icon: '⚙️' },
 ]
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { data: location } = useLocation(LOCATION_ID)
   return (
     <>
       {/* Mobile overlay */}
@@ -36,7 +40,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="p-4 border-b">
-            <h1 className="text-xl font-bold text-gray-900">Studio Mabella</h1>
+            <h1 className="text-xl font-bold text-gray-900">
+              {location?.name || 'Studio Mabella'}
+            </h1>
             <p className="text-sm text-gray-500">Buchungssystem</p>
           </div>
 

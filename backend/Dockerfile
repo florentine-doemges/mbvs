@@ -1,10 +1,18 @@
 FROM gradle:8.5-jdk17 AS build
 WORKDIR /app
+
+# Copy gradle files first for dependency caching
 COPY build.gradle.kts settings.gradle.kts ./
 COPY gradle ./gradle
 COPY gradlew ./
+RUN chmod +x gradlew
+
+# Download dependencies (cached layer)
+RUN ./gradlew dependencies --no-daemon || true
+
+# Copy source and build
 COPY src ./src
-RUN chmod +x gradlew && ./gradlew build -x test --no-daemon
+RUN ./gradlew build -x test -x ktlintCheck --no-daemon
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app

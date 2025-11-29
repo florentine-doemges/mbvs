@@ -89,12 +89,37 @@ export interface UpdateDurationOptionRequest {
   active: boolean
 }
 
+export interface Upgrade {
+  id: string
+  name: string
+  price: number
+  active: boolean
+}
+
+export interface BookingUpgrade {
+  upgrade: Upgrade
+  quantity: number
+}
+
+export interface CreateUpgradeRequest {
+  name: string
+  price: number
+}
+
+export interface UpdateUpgradeRequest {
+  name: string
+  price: number
+  active: boolean
+}
+
 export interface CalendarBooking {
   id: string
   startTime: string
   durationMinutes: number
+  restingTimeMinutes: number
   provider: ServiceProvider
   clientAlias: string
+  upgrades: BookingUpgrade[]
 }
 
 export interface CalendarRoom {
@@ -115,7 +140,9 @@ export interface Booking {
   room: Room
   startTime: string
   durationMinutes: number
+  restingTimeMinutes: number
   clientAlias: string
+  upgrades: BookingUpgrade[]
   createdAt: string
 }
 
@@ -124,7 +151,9 @@ export interface CreateBookingRequest {
   roomId: string
   startTime: string
   durationMinutes: number
-  clientAlias: string
+  restingTimeMinutes?: number
+  clientAlias?: string
+  upgrades?: Record<string, number>
 }
 
 export interface UpdateBookingRequest {
@@ -132,7 +161,9 @@ export interface UpdateBookingRequest {
   roomId: string
   startTime: string
   durationMinutes: number
-  clientAlias: string
+  restingTimeMinutes?: number
+  clientAlias?: string
+  upgrades?: Record<string, number>
 }
 
 // Booking List types
@@ -141,9 +172,11 @@ export interface BookingListItem {
   startTime: string
   endTime: string
   durationMinutes: number
+  restingTimeMinutes: number
   clientAlias: string
   provider: ProviderInfo
   room: RoomInfo
+  upgrades: BookingUpgrade[]
   status: 'upcoming' | 'today' | 'past'
   totalPrice: number
 }
@@ -171,6 +204,11 @@ export interface PageInfo {
   size: number
   totalElements: number
   totalPages: number
+}
+
+export interface Location {
+  id: string
+  name: string
 }
 
 export interface ErrorResponse {

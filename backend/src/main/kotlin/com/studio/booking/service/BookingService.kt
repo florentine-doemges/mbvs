@@ -5,6 +5,7 @@ import com.studio.booking.repository.BookingRepository
 import com.studio.booking.repository.DurationOptionRepository
 import com.studio.booking.repository.RoomRepository
 import com.studio.booking.repository.ServiceProviderRepository
+import com.studio.booking.repository.UpgradeRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -17,13 +18,16 @@ open class BookingService(
     private val roomRepository: RoomRepository,
     private val providerRepository: ServiceProviderRepository,
     private val durationOptionRepository: DurationOptionRepository,
+    private val upgradeRepository: UpgradeRepository,
 ) {
     open fun createBooking(
         providerId: UUID,
         roomId: UUID,
         startTime: LocalDateTime,
         durationMinutes: Int,
+        restingTimeMinutes: Int,
         clientAlias: String,
+        upgradesWithQuantity: Map<UUID, Int>,
     ): Booking {
         val room =
             roomRepository.findById(roomId)
@@ -42,8 +46,19 @@ open class BookingService(
             throw IllegalArgumentException("Provider ist nicht aktiv")
         }
 
-        val endTime = startTime.plusMinutes(durationMinutes.toLong())
-        validateNoOverlap(roomId, startTime, endTime, UUID.randomUUID())
+        val upgradeMap = mutableMapOf<com.studio.booking.domain.Upgrade, Int>()
+        upgradesWithQuantity.forEach { (upgradeId, quantity) ->
+            if (quantity < 1) {
+                throw IllegalArgumentException("Upgrade-Anzahl muss mindestens 1 sein")
+            }
+            val upgrade =
+                upgradeRepository.findById(upgradeId)
+                    .orElseThrow { IllegalArgumentException("Upgrade nicht gefunden: $upgradeId") }
+            upgradeMap[upgrade] = quantity
+        }
+
+        val totalEndTime = startTime.plusMinutes(durationMinutes.toLong()).plusMinutes(restingTimeMinutes.toLong())
+        validateNoOverlap(roomId, startTime, totalEndTime, UUID.randomUUID())
 
         val booking =
             Booking(
@@ -51,9 +66,11 @@ open class BookingService(
                 room = room,
                 startTime = startTime,
                 durationMinutes = durationMinutes,
+                restingTimeMinutes = restingTimeMinutes,
                 clientAlias = clientAlias,
             )
 
+        booking.setUpgrades(upgradeMap)
         return bookingRepository.save(booking)
     }
 
@@ -63,7 +80,9 @@ open class BookingService(
         roomId: UUID,
         startTime: LocalDateTime,
         durationMinutes: Int,
+        restingTimeMinutes: Int,
         clientAlias: String,
+        upgradesWithQuantity: Map<UUID, Int>,
     ): Booking {
         val booking =
             bookingRepository.findById(bookingId)
@@ -85,8 +104,19 @@ open class BookingService(
             throw IllegalArgumentException("Provider ist nicht aktiv")
         }
 
-        val endTime = startTime.plusMinutes(durationMinutes.toLong())
-        validateNoOverlap(roomId, startTime, endTime, bookingId)
+        val upgradeMap = mutableMapOf<com.studio.booking.domain.Upgrade, Int>()
+        upgradesWithQuantity.forEach { (upgradeId, quantity) ->
+            if (quantity < 1) {
+                throw IllegalArgumentException("Upgrade-Anzahl muss mindestens 1 sein")
+            }
+            val upgrade =
+                upgradeRepository.findById(upgradeId)
+                    .orElseThrow { IllegalArgumentException("Upgrade nicht gefunden: $upgradeId") }
+            upgradeMap[upgrade] = quantity
+        }
+
+        val totalEndTime = startTime.plusMinutes(durationMinutes.toLong()).plusMinutes(restingTimeMinutes.toLong())
+        validateNoOverlap(roomId, startTime, totalEndTime, bookingId)
 
         val updatedBooking =
             Booking(
@@ -95,10 +125,12 @@ open class BookingService(
                 room = room,
                 startTime = startTime,
                 durationMinutes = durationMinutes,
+                restingTimeMinutes = restingTimeMinutes,
                 clientAlias = clientAlias,
                 createdAt = booking.createdAt,
             )
 
+        updatedBooking.setUpgrades(upgradeMap)
         return bookingRepository.save(updatedBooking)
     }
 

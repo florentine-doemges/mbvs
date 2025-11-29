@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useCreateBooking, useUpdateBooking, useDeleteBooking } from '../hooks/useCalendar'
+import { useUpgrades } from '../hooks/useUpgrades'
 import type { CalendarBooking, Room, ServiceProvider, DurationOption } from '../api/types'
 
 interface BookingModalProps {
@@ -29,6 +30,7 @@ export default function BookingModal({
   const createMutation = useCreateBooking(locationId)
   const updateMutation = useUpdateBooking(locationId)
   const deleteMutation = useDeleteBooking(locationId)
+  const { data: upgrades = [] } = useUpgrades(false)
 
   const [providerId, setProviderId] = useState('')
   const [roomId, setRoomId] = useState('')
@@ -36,7 +38,9 @@ export default function BookingModal({
   const [startTime, setStartTime] = useState('')
   const [selectedOptionId, setSelectedOptionId] = useState<string>('')
   const [durationMinutes, setDurationMinutes] = useState(60)
+  const [restingTimeMinutes, setRestingTimeMinutes] = useState(0)
   const [clientAlias, setClientAlias] = useState('')
+  const [selectedUpgradeQuantities, setSelectedUpgradeQuantities] = useState<Record<string, number>>({})
   const [error, setError] = useState<string | null>(null)
 
   // Get the currently selected duration option
@@ -61,7 +65,13 @@ export default function BookingModal({
       setStartDate(format(parsedTime, 'yyyy-MM-dd'))
       setStartTime(format(parsedTime, 'HH:mm'))
       setDurationMinutes(booking.durationMinutes)
+      setRestingTimeMinutes(booking.restingTimeMinutes)
       setClientAlias(booking.clientAlias)
+      const upgradeQuantities = booking.upgrades.reduce((acc, bu) => {
+        acc[bu.upgrade.id] = bu.quantity
+        return acc
+      }, {} as Record<string, number>)
+      setSelectedUpgradeQuantities(upgradeQuantities)
       if (prefilledRoomId) setRoomId(prefilledRoomId)
 
       // Find matching duration option or use variable if exists
@@ -113,7 +123,9 @@ export default function BookingModal({
           roomId,
           startTime: startTimeISO,
           durationMinutes,
+          restingTimeMinutes,
           clientAlias,
+          upgrades: selectedUpgradeQuantities,
         })
       } else if (booking) {
         await updateMutation.mutateAsync({
@@ -123,7 +135,9 @@ export default function BookingModal({
             roomId,
             startTime: startTimeISO,
             durationMinutes,
+            restingTimeMinutes,
             clientAlias,
+            upgrades: selectedUpgradeQuantities,
           },
         })
       }
@@ -148,15 +162,16 @@ export default function BookingModal({
   const isDeleting = deleteMutation.isPending
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div className="px-6 py-4 border-b">
-          <h2 className="text-xl font-semibold">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 md:p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] md:max-h-[85vh] flex flex-col">
+        <div className="px-4 md:px-6 py-3 md:py-4 border-b flex-shrink-0">
+          <h2 className="text-lg md:text-xl font-semibold">
             {mode === 'create' ? 'Neue Buchung' : 'Buchung bearbeiten'}
           </h2>
         </div>
 
-        <form onSubmit={(e) => void handleSubmit(e)} className="p-6 space-y-4">
+        <form onSubmit={(e) => void handleSubmit(e)} className="flex flex-col flex-1 min-h-0">
+          <div className="p-4 md:p-6 space-y-3 md:space-y-4 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
               {error}
@@ -316,6 +331,25 @@ export default function BookingModal({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
+              Liegezeit (Minuten)
+            </label>
+            <input
+              type="number"
+              value={restingTimeMinutes}
+              onChange={(e) => setRestingTimeMinutes(Number(e.target.value) || 0)}
+              min="0"
+              max="120"
+              step="5"
+              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="0"
+            />
+            <p className="mt-1 text-sm text-gray-500">
+              Zusätzliche Liegezeit nach der Buchung
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Kunde (optional)
             </label>
             <input
@@ -327,31 +361,93 @@ export default function BookingModal({
             />
           </div>
 
-          <div className="flex justify-between pt-4">
+          {upgrades.length > 0 && (
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upgrades (optional)
+              </label>
+              <div className="space-y-2 max-h-48 overflow-y-auto border rounded p-3">
+                {upgrades.map((upgrade) => {
+                  const quantity = selectedUpgradeQuantities[upgrade.id] || 0
+                  return (
+                    <div key={upgrade.id} className="flex items-center gap-2">
+                      <div className="flex-1">
+                        <div className="font-medium">{upgrade.name}</div>
+                        <div className="text-sm text-gray-600">
+                          {new Intl.NumberFormat('de-DE', {
+                            style: 'currency',
+                            currency: 'EUR',
+                          }).format(upgrade.price)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newQuantity = Math.max(0, quantity - 1)
+                            if (newQuantity === 0) {
+                              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                              const { [upgrade.id]: _, ...rest } = selectedUpgradeQuantities
+                              setSelectedUpgradeQuantities(rest)
+                            } else {
+                              setSelectedUpgradeQuantities({
+                                ...selectedUpgradeQuantities,
+                                [upgrade.id]: newQuantity,
+                              })
+                            }
+                          }}
+                          className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+                          disabled={quantity === 0}
+                        >
+                          -
+                        </button>
+                        <span className="w-8 text-center font-medium">{quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedUpgradeQuantities({
+                              ...selectedUpgradeQuantities,
+                              [upgrade.id]: quantity + 1,
+                            })
+                          }}
+                          className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row justify-between gap-2 p-4 md:p-6 border-t flex-shrink-0">
+            <div className="order-2 sm:order-1">
               {mode === 'edit' && (
                 <button
                   type="button"
                   onClick={() => void handleDelete()}
                   disabled={isDeleting}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+                  className="w-full sm:w-auto px-3 md:px-4 py-2 text-sm md:text-base bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                 >
                   {isDeleting ? 'Löschen...' : 'Löschen'}
                 </button>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 order-1 sm:order-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                className="flex-1 sm:flex-none px-3 md:px-4 py-2 text-sm md:text-base bg-gray-200 rounded hover:bg-gray-300"
               >
                 Abbrechen
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 sm:flex-none px-3 md:px-4 py-2 text-sm md:text-base bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
               >
                 {isSubmitting ? 'Speichern...' : 'Speichern'}
               </button>

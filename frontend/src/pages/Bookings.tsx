@@ -54,7 +54,7 @@ export default function Bookings() {
 
   const handleViewInCalendar = (booking: BookingListItem) => {
     const date = format(new Date(booking.startTime), 'yyyy-MM-dd')
-    navigate(`/calendar?date=${date}`)
+    void navigate(`/calendar?date=${date}`)
   }
 
   const handlePreviousPage = () => {
@@ -68,8 +68,8 @@ export default function Bookings() {
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Buchungsübersicht</h1>
+    <div className="p-3 md:p-6">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">Buchungsübersicht</h1>
 
       {/* Filters */}
       <Filters
@@ -92,7 +92,7 @@ export default function Bookings() {
           <BookingTable
             bookings={bookingsData?.content}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={(id) => void handleDelete(id)}
             onViewInCalendar={handleViewInCalendar}
           />
 
@@ -138,7 +138,9 @@ export default function Bookings() {
             },
             startTime: selectedBooking.startTime,
             durationMinutes: selectedBooking.durationMinutes,
+            restingTimeMinutes: selectedBooking.restingTimeMinutes,
             clientAlias: selectedBooking.clientAlias,
+            upgrades: selectedBooking.upgrades,
           }}
           prefilledRoomId={selectedBooking.room.id}
           providers={providers}

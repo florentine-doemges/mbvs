@@ -3,6 +3,7 @@ package com.studio.booking.api
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 // Room DTOs
@@ -106,7 +107,9 @@ data class BookingDto(
     val room: RoomDto,
     val startTime: LocalDateTime,
     val durationMinutes: Int,
+    val restingTimeMinutes: Int,
     val clientAlias: String,
+    val upgrades: List<BookingUpgradeDto>,
     val createdAt: LocalDateTime,
 )
 
@@ -115,7 +118,10 @@ data class CreateBookingRequest(
     val roomId: UUID,
     val startTime: LocalDateTime,
     val durationMinutes: Int,
+    val restingTimeMinutes: Int = 0,
     val clientAlias: String = "",
+    // Map of upgradeId -> quantity
+    val upgrades: Map<String, Int> = emptyMap(),
 )
 
 data class UpdateBookingRequest(
@@ -123,7 +129,10 @@ data class UpdateBookingRequest(
     val roomId: UUID,
     val startTime: LocalDateTime,
     val durationMinutes: Int,
+    val restingTimeMinutes: Int = 0,
     val clientAlias: String = "",
+    // Map of upgradeId -> quantity
+    val upgrades: Map<String, Int> = emptyMap(),
 )
 
 // Calendar DTOs
@@ -131,8 +140,10 @@ data class CalendarBookingDto(
     val id: UUID,
     val startTime: LocalDateTime,
     val durationMinutes: Int,
+    val restingTimeMinutes: Int,
     val provider: ServiceProviderDto,
     val clientAlias: String,
+    val upgrades: List<BookingUpgradeDto>,
 )
 
 data class CalendarRoomDto(
@@ -153,9 +164,11 @@ data class BookingListItemDto(
     val startTime: LocalDateTime,
     val endTime: LocalDateTime,
     val durationMinutes: Int,
+    val restingTimeMinutes: Int,
     val clientAlias: String,
     val provider: ProviderInfoDto,
     val room: RoomInfoDto,
+    val upgrades: List<BookingUpgradeDto>,
     val status: String,
     val totalPrice: BigDecimal,
 )
@@ -185,7 +198,114 @@ data class PageInfo(
     val totalPages: Int,
 )
 
+// Upgrade DTOs
+data class UpgradeDto(
+    val id: UUID,
+    val name: String,
+    val price: BigDecimal,
+    val active: Boolean,
+)
+
+data class BookingUpgradeDto(
+    val upgrade: UpgradeDto,
+    val quantity: Int,
+)
+
+data class CreateUpgradeRequest(
+    val name: String,
+    val price: BigDecimal,
+)
+
+data class UpdateUpgradeRequest(
+    val name: String,
+    val price: BigDecimal,
+    val active: Boolean,
+)
+
+// Location DTOs
+data class LocationDto(
+    val id: UUID,
+    val name: String,
+)
+
 // Error response
 data class ErrorResponse(
     val message: String,
+)
+
+// Price History DTOs
+data class RoomPriceDto(
+    val id: UUID,
+    val roomId: UUID,
+    val price: BigDecimal,
+    val validFrom: OffsetDateTime,
+    val validTo: OffsetDateTime?,
+    val createdAt: OffsetDateTime,
+)
+
+data class UpgradePriceDto(
+    val id: UUID,
+    val upgradeId: UUID,
+    val price: BigDecimal,
+    val validFrom: OffsetDateTime,
+    val validTo: OffsetDateTime?,
+    val createdAt: OffsetDateTime,
+)
+
+data class UpdatePriceRequest(
+    val price: BigDecimal,
+    val validFrom: OffsetDateTime,
+)
+
+// Billing DTOs
+data class BillingDto(
+    val id: UUID,
+    val serviceProvider: ServiceProviderDto,
+    val periodStart: OffsetDateTime,
+    val periodEnd: OffsetDateTime,
+    val totalAmount: BigDecimal,
+    val invoiceDocumentUrl: String?,
+    val createdAt: OffsetDateTime,
+    val itemCount: Int,
+)
+
+data class BillingDetailDto(
+    val id: UUID,
+    val serviceProvider: ServiceProviderDto,
+    val periodStart: OffsetDateTime,
+    val periodEnd: OffsetDateTime,
+    val totalAmount: BigDecimal,
+    val invoiceDocumentUrl: String?,
+    val createdAt: OffsetDateTime,
+    val items: List<BillingItemDto>,
+)
+
+data class BillingItemDto(
+    val id: UUID,
+    val bookingId: UUID,
+    val frozenStartTime: OffsetDateTime,
+    val frozenEndTime: OffsetDateTime,
+    val frozenDurationMinutes: Int,
+    val frozenRestingTimeMinutes: Int,
+    val frozenClientAlias: String?,
+    val frozenRoomName: String,
+    val frozenRoomPriceAmount: BigDecimal,
+    val subtotalRoom: BigDecimal,
+    val subtotalUpgrades: BigDecimal,
+    val totalAmount: BigDecimal,
+    val upgrades: List<BillingItemUpgradeDto>,
+)
+
+data class BillingItemUpgradeDto(
+    val id: UUID,
+    val frozenUpgradeName: String,
+    val frozenQuantity: Int,
+    val frozenUpgradePriceAmount: BigDecimal,
+    val totalAmount: BigDecimal,
+)
+
+data class CreateBillingRequest(
+    val bookingIds: List<UUID>,
+    val periodStart: OffsetDateTime,
+    val periodEnd: OffsetDateTime,
 )

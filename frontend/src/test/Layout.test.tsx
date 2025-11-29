@@ -1,17 +1,27 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 
 function renderWithRouter() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  })
   return render(
-    <MemoryRouter initialEntries={['/calendar']}>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/calendar" element={<div>Calendar Content</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={['/calendar']}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/calendar" element={<div>Calendar Content</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
   )
 }
 

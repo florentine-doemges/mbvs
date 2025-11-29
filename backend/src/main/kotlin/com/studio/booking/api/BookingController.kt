@@ -22,13 +22,16 @@ class BookingController(
     fun createBooking(
         @RequestBody request: CreateBookingRequest,
     ): ResponseEntity<BookingDto> {
+        val upgradesWithQuantity = request.upgrades.mapKeys { UUID.fromString(it.key) }
         val booking =
             bookingService.createBooking(
                 providerId = request.providerId,
                 roomId = request.roomId,
                 startTime = request.startTime,
                 durationMinutes = request.durationMinutes,
+                restingTimeMinutes = request.restingTimeMinutes,
                 clientAlias = request.clientAlias,
+                upgradesWithQuantity = upgradesWithQuantity,
             )
         return ResponseEntity.status(HttpStatus.CREATED).body(booking.toDto())
     }
@@ -45,13 +48,16 @@ class BookingController(
         @PathVariable id: UUID,
         @RequestBody request: UpdateBookingRequest,
     ): BookingDto {
+        val upgradesWithQuantity = request.upgrades.mapKeys { UUID.fromString(it.key) }
         return bookingService.updateBooking(
             bookingId = id,
             providerId = request.providerId,
             roomId = request.roomId,
             startTime = request.startTime,
             durationMinutes = request.durationMinutes,
+            restingTimeMinutes = request.restingTimeMinutes,
             clientAlias = request.clientAlias,
+            upgradesWithQuantity = upgradesWithQuantity,
         ).toDto()
     }
 

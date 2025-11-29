@@ -66,7 +66,9 @@ class BookingControllerTest {
                 roomId = eq(room.id),
                 startTime = eq(startTime),
                 durationMinutes = eq(60),
+                restingTimeMinutes = eq(0),
                 clientAlias = eq("Max"),
+                upgradesWithQuantity = eq(emptyMap()),
             ),
         ).thenReturn(createdBooking)
 
@@ -136,7 +138,9 @@ class BookingControllerTest {
                 roomId = eq(room.id),
                 startTime = eq(startTime),
                 durationMinutes = eq(90),
+                restingTimeMinutes = eq(0),
                 clientAlias = eq("Max Updated"),
+                upgradesWithQuantity = eq(emptyMap()),
             ),
         ).thenReturn(updatedBooking)
 

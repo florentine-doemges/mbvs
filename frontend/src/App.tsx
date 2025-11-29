@@ -5,6 +5,8 @@ import Rooms from './pages/Rooms'
 import RoomForm from './pages/RoomForm'
 import Providers from './pages/Providers'
 import ProviderForm from './pages/ProviderForm'
+import Upgrades from './pages/Upgrades'
+import UpgradeForm from './pages/UpgradeForm'
 import Settings from './pages/Settings'
 import Bookings from './pages/Bookings'
 
@@ -24,6 +26,9 @@ function App() {
           <Route path="providers" element={<Providers />} />
           <Route path="providers/new" element={<ProviderForm />} />
           <Route path="providers/:id" element={<ProviderForm />} />
+          <Route path="upgrades" element={<Upgrades />} />
+          <Route path="upgrades/new" element={<UpgradeForm />} />
+          <Route path="upgrades/:id" element={<UpgradeForm />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

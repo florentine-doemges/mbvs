@@ -1,5 +1,6 @@
 package com.studio.booking.service
 
+import com.studio.booking.domain.BookingUpgrade
 import com.studio.booking.repository.BookingRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -52,8 +53,9 @@ class BookingQueryService(
             BookingListItem(
                 id = booking.id,
                 startTime = booking.startTime,
-                endTime = booking.endTime(),
+                endTime = booking.totalEndTime(),
                 durationMinutes = booking.durationMinutes,
+                restingTimeMinutes = booking.restingTimeMinutes,
                 clientAlias = booking.clientAlias,
                 provider =
                     ProviderInfo(
@@ -68,8 +70,9 @@ class BookingQueryService(
                         color = booking.room.color,
                         hourlyRate = booking.room.hourlyRate,
                     ),
+                upgrades = booking.bookingUpgrades.toList(),
                 status = calculateStatus(booking.startTime),
-                totalPrice = calculatePrice(booking.durationMinutes, booking.room.hourlyRate),
+                totalPrice = calculateTotalPrice(booking.durationMinutes, booking.room.hourlyRate, booking.bookingUpgrades),
             )
         }
     }
@@ -85,12 +88,15 @@ class BookingQueryService(
         }
     }
 
-    private fun calculatePrice(
+    private fun calculateTotalPrice(
         durationMinutes: Int,
         hourlyRate: java.math.BigDecimal,
+        bookingUpgrades: Set<BookingUpgrade>,
     ): java.math.BigDecimal {
         val hours = durationMinutes.toBigDecimal().divide(60.toBigDecimal(), 2, java.math.RoundingMode.HALF_UP)
-        return hourlyRate.multiply(hours)
+        val roomPrice = hourlyRate.multiply(hours)
+        val upgradesPrice = bookingUpgrades.sumOf { it.upgrade.price.multiply(it.quantity.toBigDecimal()) }
+        return roomPrice.add(upgradesPrice)
     }
 }
 
@@ -105,9 +111,11 @@ data class BookingListItem(
     val startTime: LocalDateTime,
     val endTime: LocalDateTime,
     val durationMinutes: Int,
+    val restingTimeMinutes: Int,
     val clientAlias: String,
     val provider: ProviderInfo,
     val room: RoomInfo,
+    val upgrades: List<BookingUpgrade>,
     val status: BookingStatus,
     val totalPrice: java.math.BigDecimal,
 )

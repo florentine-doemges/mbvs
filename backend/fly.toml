@@ -1,0 +1,38 @@
+# fly.toml app configuration file generated for dominos-booking-backend on 2025-11-29T15:16:35+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'dominos-booking-backend'
+primary_region = 'fra'
+
+[build]
+
+[env]
+  PORT = '8080'
+  SPRING_PROFILES_ACTIVE = 'prod'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'off'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+  [http_service.concurrency]
+    type = 'connections'
+    hard_limit = 25
+    soft_limit = 20
+
+  [[http_service.checks]]
+    interval = '30s'
+    timeout = '5s'
+    grace_period = '10s'
+    method = 'GET'
+    path = '/actuator/health'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

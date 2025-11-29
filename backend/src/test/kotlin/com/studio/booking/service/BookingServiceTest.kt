@@ -9,6 +9,7 @@ import com.studio.booking.repository.BookingRepository
 import com.studio.booking.repository.DurationOptionRepository
 import com.studio.booking.repository.RoomRepository
 import com.studio.booking.repository.ServiceProviderRepository
+import com.studio.booking.repository.UpgradeRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -36,6 +37,9 @@ class BookingServiceTest {
 
     @Mock
     private lateinit var durationOptionRepository: DurationOptionRepository
+
+    @Mock
+    private lateinit var upgradeRepository: UpgradeRepository
 
     private lateinit var bookingService: BookingService
 
@@ -65,6 +69,7 @@ class BookingServiceTest {
                 roomRepository,
                 providerRepository,
                 durationOptionRepository,
+                upgradeRepository,
             )
     }
 
@@ -84,7 +89,9 @@ class BookingServiceTest {
                 roomId = room.id,
                 startTime = startTime,
                 durationMinutes = 60,
+                restingTimeMinutes = 0,
                 clientAlias = "Test Client",
+                upgradesWithQuantity = emptyMap(),
             )
 
         assertEquals(provider.id, booking.provider.id)
@@ -109,7 +116,9 @@ class BookingServiceTest {
                 roomId = room.id,
                 startTime = startTime,
                 durationMinutes = 150,
+                restingTimeMinutes = 0,
                 clientAlias = "Test Client",
+                upgradesWithQuantity = emptyMap(),
             )
 
         assertEquals(150, booking.durationMinutes)
@@ -131,7 +140,9 @@ class BookingServiceTest {
                     roomId = room.id,
                     startTime = startTime,
                     durationMinutes = 60,
+                    restingTimeMinutes = 0,
                     clientAlias = "Test Client",
+                    upgradesWithQuantity = emptyMap(),
                 )
             }
 
@@ -151,7 +162,9 @@ class BookingServiceTest {
                     roomId = room.id,
                     startTime = LocalDateTime.now().plusHours(1),
                     durationMinutes = 45,
+                    restingTimeMinutes = 0,
                     clientAlias = "Test Client",
+                    upgradesWithQuantity = emptyMap(),
                 )
             }
 
@@ -171,7 +184,9 @@ class BookingServiceTest {
                     roomId = room.id,
                     startTime = LocalDateTime.now().minusHours(1),
                     durationMinutes = 60,
+                    restingTimeMinutes = 0,
                     clientAlias = "Test Client",
+                    upgradesWithQuantity = emptyMap(),
                 )
             }
 
@@ -189,7 +204,9 @@ class BookingServiceTest {
                     roomId = UUID.randomUUID(),
                     startTime = LocalDateTime.now().plusHours(1),
                     durationMinutes = 60,
+                    restingTimeMinutes = 0,
                     clientAlias = "Test Client",
+                    upgradesWithQuantity = emptyMap(),
                 )
             }
 
@@ -214,7 +231,9 @@ class BookingServiceTest {
                     roomId = inactiveRoom.id,
                     startTime = LocalDateTime.now().plusHours(1),
                     durationMinutes = 60,
+                    restingTimeMinutes = 0,
                     clientAlias = "Test Client",
+                    upgradesWithQuantity = emptyMap(),
                 )
             }
 
@@ -235,7 +254,9 @@ class BookingServiceTest {
                     roomId = room.id,
                     startTime = LocalDateTime.now().plusHours(1),
                     durationMinutes = 60,
+                    restingTimeMinutes = 0,
                     clientAlias = "Test Client",
+                    upgradesWithQuantity = emptyMap(),
                 )
             }
 
@@ -257,7 +278,9 @@ class BookingServiceTest {
                     roomId = room.id,
                     startTime = LocalDateTime.now().plusHours(1),
                     durationMinutes = 60,
+                    restingTimeMinutes = 0,
                     clientAlias = "Test Client",
+                    upgradesWithQuantity = emptyMap(),
                 )
             }
 
@@ -271,6 +294,37 @@ class BookingServiceTest {
         val exception =
             assertThrows(IllegalArgumentException::class.java) {
                 bookingService.deleteBooking(UUID.randomUUID())
+            }
+
+        assertEquals("Buchung nicht gefunden", exception.message)
+    }
+
+    @Test
+    fun `getBooking should return booking when found`() {
+        val booking =
+            Booking(
+                provider = provider,
+                room = room,
+                startTime = LocalDateTime.now().plusHours(1),
+                durationMinutes = 60,
+                restingTimeMinutes = 0,
+                clientAlias = "Test Client",
+            )
+        whenever(bookingRepository.findById(booking.id)).thenReturn(Optional.of(booking))
+
+        val result = bookingService.getBooking(booking.id)
+
+        assertEquals(booking.id, result.id)
+    }
+
+    @Test
+    fun `getBooking should throw exception when not found`() {
+        val bookingId = UUID.randomUUID()
+        whenever(bookingRepository.findById(bookingId)).thenReturn(Optional.empty())
+
+        val exception =
+            assertThrows(IllegalArgumentException::class.java) {
+                bookingService.getBooking(bookingId)
             }
 
         assertEquals("Buchung nicht gefunden", exception.message)

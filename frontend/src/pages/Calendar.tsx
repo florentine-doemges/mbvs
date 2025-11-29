@@ -180,49 +180,55 @@ export default function Calendar() {
 
   return (
     <div className="bg-white rounded-lg shadow">
-      <div className="p-4 border-b flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePrevDay}
-            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
-          >
-            &larr;
-          </button>
-          <button
-            onClick={handleToday}
-            className="px-3 py-2 bg-blue-100 hover:bg-blue-200 rounded"
-          >
-            Heute
-          </button>
-          <button
-            onClick={handleNextDay}
-            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded"
-          >
-            &rarr;
-          </button>
+      {/* Header - Mobile optimized */}
+      <div className="p-3 md:p-4 border-b space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1 md:gap-2">
+            <button
+              onClick={handlePrevDay}
+              className="px-2 md:px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm md:text-base"
+            >
+              &larr;
+            </button>
+            <button
+              onClick={handleToday}
+              className="px-2 md:px-3 py-2 bg-blue-100 hover:bg-blue-200 rounded text-sm md:text-base"
+            >
+              Heute
+            </button>
+            <button
+              onClick={handleNextDay}
+              className="px-2 md:px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded text-sm md:text-base"
+            >
+              &rarr;
+            </button>
+          </div>
+          <input
+            type="date"
+            value={format(selectedDate, 'yyyy-MM-dd')}
+            onChange={(e) => setSelectedDate(new Date(e.target.value))}
+            className="px-2 md:px-3 py-2 border rounded text-sm md:text-base"
+          />
         </div>
-        <div className="text-lg font-semibold">
+        <div className="text-base md:text-lg font-semibold text-center md:text-left">
           {format(selectedDate, 'EEEE, d. MMMM yyyy', { locale: de })}
         </div>
-        <input
-          type="date"
-          value={format(selectedDate, 'yyyy-MM-dd')}
-          onChange={(e) => setSelectedDate(new Date(e.target.value))}
-          className="px-3 py-2 border rounded"
-        />
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-[1200px] w-full border-collapse">
+      {/* Calendar table with improved mobile scrolling */}
+      <div className="overflow-x-auto -mx-4 md:mx-0">
+        <div className="inline-block min-w-full align-middle">
+          <div className="overflow-hidden">
+            <table className="min-w-full w-full border-collapse" style={{ minWidth: '800px' }}>
           <thead>
             <tr>
-              <th className="bg-gray-50 p-2 border-b border-r font-semibold text-left w-24">
+              <th className="bg-gray-50 p-1 md:p-2 border-b border-r font-semibold text-left text-xs md:text-sm sticky left-0 z-10 w-16 md:w-24">
                 Raum
               </th>
               {TIME_SLOTS.map((slot) => (
                 <th
                   key={slot}
-                  className="bg-gray-50 p-2 border-b text-center text-sm font-medium min-w-[60px]"
+                  className="bg-gray-50 p-1 md:p-2 border-b text-center text-xs md:text-sm font-medium min-w-[50px] md:min-w-[60px]"
                 >
                   {slot}
                 </th>
@@ -232,13 +238,13 @@ export default function Calendar() {
           <tbody>
             {calendar?.rooms.map((room) => (
               <tr key={room.id}>
-                <td className="p-2 border-b border-r font-medium bg-gray-50">
-                  <div className="flex items-center gap-2">
+                <td className="p-1 md:p-2 border-b border-r font-medium bg-gray-50 sticky left-0 z-10 text-xs md:text-sm">
+                  <div className="flex items-center gap-1 md:gap-2">
                     <div
-                      className="w-3 h-3 rounded-full"
+                      className="w-2 h-2 md:w-3 md:h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: room.color }}
                     />
-                    {room.name}
+                    <span className="truncate">{room.name}</span>
                   </div>
                 </td>
                 {TIME_SLOTS.map((slot, slotIndex) => {
@@ -262,17 +268,17 @@ export default function Calendar() {
                           draggable
                           onDragStart={() => handleDragStart(bookingInfo.booking, room.id)}
                           onDragEnd={handleDragEnd}
-                          className={`border-2 rounded m-1 p-2 cursor-move text-xs h-[52px] overflow-hidden hover:opacity-80 ${
+                          className={`border-2 rounded m-0.5 md:m-1 p-1 md:p-2 cursor-move text-[10px] md:text-xs h-[40px] md:h-[52px] overflow-hidden hover:opacity-80 ${
                             isDragging ? 'opacity-50' : ''
                           }`}
                           style={style}
                           onClick={() => handleBookingClick(bookingInfo.booking, room.id)}
                         >
-                          <div className="font-semibold truncate">
+                          <div className="font-semibold truncate leading-tight">
                             {bookingInfo.booking.provider.name}
                           </div>
                           {bookingInfo.booking.clientAlias && (
-                            <div className="truncate text-gray-600">
+                            <div className="truncate text-gray-600 leading-tight">
                               {bookingInfo.booking.clientAlias}
                             </div>
                           )}
@@ -287,7 +293,7 @@ export default function Calendar() {
                   return (
                     <td
                       key={`${room.id}-${slot}`}
-                      className={`border-b border-r min-h-[60px] h-[60px] cursor-pointer ${
+                      className={`border-b border-r min-h-[40px] h-[40px] md:min-h-[60px] md:h-[60px] cursor-pointer ${
                         isDropTarget
                           ? 'bg-blue-200 border-blue-400'
                           : 'hover:bg-gray-100'
@@ -295,7 +301,7 @@ export default function Calendar() {
                       onClick={() => handleSlotClick(room.id, slot)}
                       onDragOver={(e) => handleDragOver(e, room.id, slot)}
                       onDragLeave={handleDragLeave}
-                      onDrop={(e) => handleDrop(e, room.id, slot)}
+                      onDrop={(e) => void handleDrop(e, room.id, slot)}
                     />
                   )
                 })}
@@ -303,6 +309,8 @@ export default function Calendar() {
             ))}
           </tbody>
         </table>
+          </div>
+        </div>
       </div>
 
       {modalState.isOpen && rooms && providers && durationOptions && (

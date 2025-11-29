@@ -3,9 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import BookingModal from '../components/BookingModal'
 import * as hooks from '../hooks/useCalendar'
+import * as upgradeHooks from '../hooks/useUpgrades'
 import type { DurationOption } from '../api/types'
 
 vi.mock('../hooks/useCalendar')
+vi.mock('../hooks/useUpgrades')
 
 const mockRooms = [
   { id: '1', name: 'Rot', hourlyRate: 70 },
@@ -61,6 +63,10 @@ describe('BookingModal', () => {
       mutateAsync: mockDeleteMutate,
       isPending: false,
     } as unknown as ReturnType<typeof hooks.useDeleteBooking>)
+
+    vi.mocked(upgradeHooks.useUpgrades).mockReturnValue({
+      data: [],
+    } as unknown as ReturnType<typeof upgradeHooks.useUpgrades>)
   })
 
   it('renders create mode title', () => {
@@ -84,8 +90,10 @@ describe('BookingModal', () => {
       id: 'b1',
       startTime: '2024-06-15T14:00:00',
       durationMinutes: 60,
+      restingTimeMinutes: 0,
       provider: { id: 'p1', name: 'Lady Lexi' },
       clientAlias: 'Max',
+      upgrades: [],
     }
 
     render(
@@ -176,8 +184,10 @@ describe('BookingModal', () => {
       id: 'b1',
       startTime: '2024-06-15T14:00:00',
       durationMinutes: 60,
+      restingTimeMinutes: 0,
       provider: { id: 'p1', name: 'Lady Lexi' },
       clientAlias: 'Max',
+      upgrades: [],
     }
 
     render(
@@ -291,8 +301,10 @@ describe('BookingModal', () => {
       id: 'b1',
       startTime: '2024-06-15T14:00:00',
       durationMinutes: 60,
+      restingTimeMinutes: 0,
       provider: { id: 'p1', name: 'Lady Lexi' },
       clientAlias: 'Max',
+      upgrades: [],
     }
 
     render(
@@ -331,8 +343,10 @@ describe('BookingModal', () => {
       id: 'b1',
       startTime: '2024-06-15T14:00:00',
       durationMinutes: 60,
+      restingTimeMinutes: 0,
       provider: { id: 'p1', name: 'Lady Lexi' },
       clientAlias: 'Max',
+      upgrades: [],
     }
 
     render(
@@ -365,8 +379,10 @@ describe('BookingModal', () => {
       id: 'b1',
       startTime: '2024-06-15T14:00:00',
       durationMinutes: 60,
+      restingTimeMinutes: 0,
       provider: { id: 'p1', name: 'Lady Lexi' },
       clientAlias: 'Max',
+      upgrades: [],
     }
 
     render(
@@ -591,8 +607,10 @@ describe('BookingModal', () => {
       id: 'b1',
       startTime: '2024-06-15T14:00:00',
       durationMinutes: 90, // Non-standard duration
+      restingTimeMinutes: 0,
       provider: { id: 'p1', name: 'Lady Lexi' },
       clientAlias: 'Max',
+      upgrades: [],
     }
 
     render(
