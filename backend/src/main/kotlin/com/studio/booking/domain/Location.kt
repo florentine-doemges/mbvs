@@ -12,5 +12,5 @@ class Location(
     @Id
     val id: UUID = UUID.randomUUID(),
     val name: String,
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 )

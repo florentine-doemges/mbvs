@@ -11,21 +11,24 @@ import java.util.UUID
 
 data class CalendarDay(
     val date: LocalDate,
-    val rooms: List<RoomWithBookings>
+    val rooms: List<RoomWithBookings>,
 )
 
 data class RoomWithBookings(
     val room: Room,
-    val bookings: List<Booking>
+    val bookings: List<Booking>,
 )
 
 @Service
 @Transactional(readOnly = true)
 open class CalendarService(
     private val bookingRepository: BookingRepository,
-    private val roomRepository: RoomRepository
+    private val roomRepository: RoomRepository,
 ) {
-    open fun getCalendarForDate(locationId: UUID, date: LocalDate): CalendarDay {
+    open fun getCalendarForDate(
+        locationId: UUID,
+        date: LocalDate,
+    ): CalendarDay {
         val rooms = roomRepository.findByLocationIdAndActiveTrue(locationId)
         val startOfDay = date.atStartOfDay()
         val endOfDay = date.plusDays(1).atStartOfDay()
@@ -33,12 +36,13 @@ open class CalendarService(
         val bookings = bookingRepository.findByLocationAndDate(locationId, startOfDay, endOfDay)
         val bookingsByRoom = bookings.groupBy { it.room.id }
 
-        val roomsWithBookings = rooms.map { room ->
-            RoomWithBookings(
-                room = room,
-                bookings = bookingsByRoom[room.id] ?: emptyList()
-            )
-        }
+        val roomsWithBookings =
+            rooms.map { room ->
+                RoomWithBookings(
+                    room = room,
+                    bookings = bookingsByRoom[room.id] ?: emptyList(),
+                )
+            }
 
         return CalendarDay(date = date, rooms = roomsWithBookings)
     }

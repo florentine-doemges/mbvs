@@ -39,7 +39,7 @@ export function useCreateBooking(locationId: string) {
   return useMutation({
     mutationFn: (request: CreateBookingRequest) => createBooking(request),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', locationId] })
+      void queryClient.invalidateQueries({ queryKey: ['calendar', locationId] })
     },
   })
 }
@@ -51,7 +51,7 @@ export function useUpdateBooking(locationId: string) {
     mutationFn: ({ id, request }: { id: string; request: UpdateBookingRequest }) =>
       updateBooking(id, request),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', locationId] })
+      void queryClient.invalidateQueries({ queryKey: ['calendar', locationId] })
     },
   })
 }
@@ -62,7 +62,7 @@ export function useDeleteBooking(locationId: string) {
   return useMutation({
     mutationFn: (bookingId: string) => deleteBooking(bookingId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar', locationId] })
+      void queryClient.invalidateQueries({ queryKey: ['calendar', locationId] })
     },
   })
 }

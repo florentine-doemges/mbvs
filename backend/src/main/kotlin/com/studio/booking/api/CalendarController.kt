@@ -13,12 +13,12 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/locations/{locationId}/calendar")
 class CalendarController(
-    private val calendarService: CalendarService
+    private val calendarService: CalendarService,
 ) {
     @GetMapping
     fun getCalendar(
         @PathVariable locationId: UUID,
-        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate,
     ): CalendarDayDto {
         return calendarService.getCalendarForDate(locationId, date).toDto()
     }

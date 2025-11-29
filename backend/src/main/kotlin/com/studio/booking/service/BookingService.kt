@@ -2,6 +2,7 @@ package com.studio.booking.service
 
 import com.studio.booking.domain.Booking
 import com.studio.booking.repository.BookingRepository
+import com.studio.booking.repository.DurationOptionRepository
 import com.studio.booking.repository.RoomRepository
 import com.studio.booking.repository.ServiceProviderRepository
 import org.springframework.stereotype.Service
@@ -14,44 +15,44 @@ import java.util.UUID
 open class BookingService(
     private val bookingRepository: BookingRepository,
     private val roomRepository: RoomRepository,
-    private val providerRepository: ServiceProviderRepository
+    private val providerRepository: ServiceProviderRepository,
+    private val durationOptionRepository: DurationOptionRepository,
 ) {
-    companion object {
-        val VALID_DURATIONS = setOf(30, 60, 90, 120)
-    }
-
     open fun createBooking(
         providerId: UUID,
         roomId: UUID,
         startTime: LocalDateTime,
         durationMinutes: Int,
-        clientAlias: String
+        clientAlias: String,
     ): Booking {
-        validateDuration(durationMinutes)
-        validateStartTimeNotInPast(startTime)
-
-        val provider = providerRepository.findById(providerId)
-            .orElseThrow { IllegalArgumentException("Provider nicht gefunden") }
-        if (!provider.active) {
-            throw IllegalArgumentException("Provider ist nicht aktiv")
-        }
-
-        val room = roomRepository.findById(roomId)
-            .orElseThrow { IllegalArgumentException("Raum nicht gefunden") }
+        val room =
+            roomRepository.findById(roomId)
+                .orElseThrow { IllegalArgumentException("Raum nicht gefunden") }
         if (!room.active) {
             throw IllegalArgumentException("Raum ist nicht aktiv")
+        }
+
+        validateDuration(durationMinutes, room.location.id)
+        validateStartTimeNotInPast(startTime)
+
+        val provider =
+            providerRepository.findById(providerId)
+                .orElseThrow { IllegalArgumentException("Provider nicht gefunden") }
+        if (!provider.active) {
+            throw IllegalArgumentException("Provider ist nicht aktiv")
         }
 
         val endTime = startTime.plusMinutes(durationMinutes.toLong())
         validateNoOverlap(roomId, startTime, endTime, UUID.randomUUID())
 
-        val booking = Booking(
-            provider = provider,
-            room = room,
-            startTime = startTime,
-            durationMinutes = durationMinutes,
-            clientAlias = clientAlias
-        )
+        val booking =
+            Booking(
+                provider = provider,
+                room = room,
+                startTime = startTime,
+                durationMinutes = durationMinutes,
+                clientAlias = clientAlias,
+            )
 
         return bookingRepository.save(booking)
     }
@@ -62,37 +63,41 @@ open class BookingService(
         roomId: UUID,
         startTime: LocalDateTime,
         durationMinutes: Int,
-        clientAlias: String
+        clientAlias: String,
     ): Booking {
-        validateDuration(durationMinutes)
+        val booking =
+            bookingRepository.findById(bookingId)
+                .orElseThrow { IllegalArgumentException("Buchung nicht gefunden") }
 
-        val booking = bookingRepository.findById(bookingId)
-            .orElseThrow { IllegalArgumentException("Buchung nicht gefunden") }
-
-        val provider = providerRepository.findById(providerId)
-            .orElseThrow { IllegalArgumentException("Provider nicht gefunden") }
-        if (!provider.active) {
-            throw IllegalArgumentException("Provider ist nicht aktiv")
-        }
-
-        val room = roomRepository.findById(roomId)
-            .orElseThrow { IllegalArgumentException("Raum nicht gefunden") }
+        val room =
+            roomRepository.findById(roomId)
+                .orElseThrow { IllegalArgumentException("Raum nicht gefunden") }
         if (!room.active) {
             throw IllegalArgumentException("Raum ist nicht aktiv")
+        }
+
+        validateDuration(durationMinutes, room.location.id)
+
+        val provider =
+            providerRepository.findById(providerId)
+                .orElseThrow { IllegalArgumentException("Provider nicht gefunden") }
+        if (!provider.active) {
+            throw IllegalArgumentException("Provider ist nicht aktiv")
         }
 
         val endTime = startTime.plusMinutes(durationMinutes.toLong())
         validateNoOverlap(roomId, startTime, endTime, bookingId)
 
-        val updatedBooking = Booking(
-            id = booking.id,
-            provider = provider,
-            room = room,
-            startTime = startTime,
-            durationMinutes = durationMinutes,
-            clientAlias = clientAlias,
-            createdAt = booking.createdAt
-        )
+        val updatedBooking =
+            Booking(
+                id = booking.id,
+                provider = provider,
+                room = room,
+                startTime = startTime,
+                durationMinutes = durationMinutes,
+                clientAlias = clientAlias,
+                createdAt = booking.createdAt,
+            )
 
         return bookingRepository.save(updatedBooking)
     }
@@ -109,9 +114,34 @@ open class BookingService(
             .orElseThrow { IllegalArgumentException("Buchung nicht gefunden") }
     }
 
-    private fun validateDuration(durationMinutes: Int) {
-        if (durationMinutes !in VALID_DURATIONS) {
-            throw IllegalArgumentException("Dauer muss 30, 60, 90 oder 120 Minuten sein")
+    private fun validateDuration(
+        durationMinutes: Int,
+        locationId: UUID,
+    ) {
+        val options = durationOptionRepository.findByLocationIdAndActiveTrueOrderBySortOrderAsc(locationId)
+
+        val isValid =
+            options.any { option ->
+                if (option.isVariable) {
+                    val min = option.minMinutes ?: 0
+                    val max = option.maxMinutes ?: Int.MAX_VALUE
+                    val step = option.stepMinutes ?: 1
+                    durationMinutes in min..max && (durationMinutes - min) % step == 0
+                } else {
+                    option.minutes == durationMinutes
+                }
+            }
+
+        if (!isValid) {
+            val validOptions =
+                options.map { option ->
+                    if (option.isVariable) {
+                        "${option.minMinutes}-${option.maxMinutes} Min (${option.stepMinutes}er Schritte)"
+                    } else {
+                        "${option.minutes} Min"
+                    }
+                }.joinToString(", ")
+            throw IllegalArgumentException("Ungültige Dauer. Erlaubt: $validOptions")
         }
     }
 
@@ -121,7 +151,12 @@ open class BookingService(
         }
     }
 
-    private fun validateNoOverlap(roomId: UUID, startTime: LocalDateTime, endTime: LocalDateTime, excludeBookingId: UUID) {
+    private fun validateNoOverlap(
+        roomId: UUID,
+        startTime: LocalDateTime,
+        endTime: LocalDateTime,
+        excludeBookingId: UUID,
+    ) {
         val hasOverlap = bookingRepository.existsOverlappingBooking(roomId, startTime, endTime, excludeBookingId)
         if (hasOverlap) {
             throw IllegalArgumentException("Der Raum ist zu dieser Zeit bereits gebucht")

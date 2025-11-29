@@ -1,29 +1,18 @@
 import { useState } from 'react'
 import { format, addDays, subDays, parseISO } from 'date-fns'
 import { de } from 'date-fns/locale'
-import { useCalendar, useRooms, useProviders } from '../hooks/useCalendar'
+import { useCalendar, useProviders } from '../hooks/useCalendar'
+import { useRooms } from '../hooks/useRooms'
+import { useDurationOptions } from '../hooks/useDurationOptions'
+import { LOCATION_ID } from '../App'
 import BookingModal from '../components/BookingModal'
 import type { CalendarBooking } from '../api/types'
-
-interface CalendarProps {
-  locationId: string
-  selectedDate: Date
-  onDateChange: (date: Date) => void
-}
 
 const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
   const hour = Math.floor(i / 2) + 10
   const minutes = (i % 2) * 30
   return `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
 })
-
-const ROOM_COLORS: Record<string, string> = {
-  'Rot': 'bg-red-200 border-red-400 hover:bg-red-300',
-  'Blau': 'bg-blue-200 border-blue-400 hover:bg-blue-300',
-  'Gelb': 'bg-yellow-200 border-yellow-400 hover:bg-yellow-300',
-  'Klinik': 'bg-purple-200 border-purple-400 hover:bg-purple-300',
-  'Outdoor': 'bg-green-200 border-green-400 hover:bg-green-300',
-}
 
 interface ModalState {
   isOpen: boolean
@@ -33,19 +22,25 @@ interface ModalState {
   prefilledTime?: string
 }
 
-export default function Calendar({ locationId, selectedDate, onDateChange }: CalendarProps) {
-  const { data: calendar, isLoading: calendarLoading, error: calendarError } = useCalendar(locationId, selectedDate)
-  const { data: rooms } = useRooms(locationId)
-  const { data: providers } = useProviders(locationId)
+export default function Calendar() {
+  const [selectedDate, setSelectedDate] = useState(new Date())
+  const {
+    data: calendar,
+    isLoading: calendarLoading,
+    error: calendarError,
+  } = useCalendar(LOCATION_ID, selectedDate)
+  const { data: rooms } = useRooms(LOCATION_ID)
+  const { data: providers } = useProviders(LOCATION_ID)
+  const { data: durationOptions } = useDurationOptions(LOCATION_ID)
 
   const [modalState, setModalState] = useState<ModalState>({
     isOpen: false,
     mode: 'create',
   })
 
-  const handlePrevDay = () => onDateChange(subDays(selectedDate, 1))
-  const handleNextDay = () => onDateChange(addDays(selectedDate, 1))
-  const handleToday = () => onDateChange(new Date())
+  const handlePrevDay = () => setSelectedDate(subDays(selectedDate, 1))
+  const handleNextDay = () => setSelectedDate(addDays(selectedDate, 1))
+  const handleToday = () => setSelectedDate(new Date())
 
   const handleSlotClick = (roomId: string, timeSlot: string) => {
     const dateStr = format(selectedDate, 'yyyy-MM-dd')
@@ -73,7 +68,8 @@ export default function Calendar({ locationId, selectedDate, onDateChange }: Cal
   const getBookingAtSlot = (bookings: CalendarBooking[], slotIndex: number) => {
     for (const booking of bookings) {
       const startTime = parseISO(booking.startTime)
-      const startSlot = (startTime.getHours() - 10) * 2 + (startTime.getMinutes() >= 30 ? 1 : 0)
+      const startSlot =
+        (startTime.getHours() - 10) * 2 + (startTime.getMinutes() >= 30 ? 1 : 0)
       if (slotIndex === startSlot) {
         return { booking, isStart: true, span: booking.durationMinutes / 30 }
       }
@@ -83,6 +79,25 @@ export default function Calendar({ locationId, selectedDate, onDateChange }: Cal
       }
     }
     return null
+  }
+
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : { r: 59, g: 130, b: 246 }
+  }
+
+  const getBookingStyle = (color: string) => {
+    const rgb = hexToRgb(color)
+    return {
+      backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`,
+      borderColor: color,
+    }
   }
 
   if (calendarLoading) {
@@ -130,7 +145,7 @@ export default function Calendar({ locationId, selectedDate, onDateChange }: Cal
         <input
           type="date"
           value={format(selectedDate, 'yyyy-MM-dd')}
-          onChange={(e) => onDateChange(new Date(e.target.value))}
+          onChange={(e) => setSelectedDate(new Date(e.target.value))}
           className="px-3 py-2 border rounded"
         />
       </div>
@@ -156,7 +171,13 @@ export default function Calendar({ locationId, selectedDate, onDateChange }: Cal
             {calendar?.rooms.map((room) => (
               <tr key={room.id}>
                 <td className="p-2 border-b border-r font-medium bg-gray-50">
-                  {room.name}
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: room.color }}
+                    />
+                    {room.name}
+                  </div>
                 </td>
                 {TIME_SLOTS.map((slot, slotIndex) => {
                   const bookingInfo = getBookingAtSlot(room.bookings, slotIndex)
@@ -166,7 +187,7 @@ export default function Calendar({ locationId, selectedDate, onDateChange }: Cal
                   }
 
                   if (bookingInfo && bookingInfo.isStart) {
-                    const colorClass = ROOM_COLORS[room.name] || 'bg-gray-200 border-gray-400 hover:bg-gray-300'
+                    const style = getBookingStyle(room.color)
                     return (
                       <td
                         key={`${room.id}-${slot}`}
@@ -174,7 +195,8 @@ export default function Calendar({ locationId, selectedDate, onDateChange }: Cal
                         className="border-b border-r p-0"
                       >
                         <div
-                          className={`${colorClass} border-2 rounded m-1 p-2 cursor-pointer text-xs h-[52px] overflow-hidden`}
+                          className="border-2 rounded m-1 p-2 cursor-pointer text-xs h-[52px] overflow-hidden hover:opacity-80"
+                          style={style}
                           onClick={() => handleBookingClick(bookingInfo.booking, room.id)}
                         >
                           <div className="font-semibold truncate">
@@ -204,13 +226,14 @@ export default function Calendar({ locationId, selectedDate, onDateChange }: Cal
         </table>
       </div>
 
-      {modalState.isOpen && rooms && providers && (
+      {modalState.isOpen && rooms && providers && durationOptions && (
         <BookingModal
-          locationId={locationId}
+          locationId={LOCATION_ID}
           mode={modalState.mode}
           booking={modalState.booking}
           rooms={rooms}
           providers={providers}
+          durationOptions={durationOptions}
           prefilledRoomId={modalState.prefilledRoomId}
           prefilledTime={modalState.prefilledTime}
           onClose={handleCloseModal}

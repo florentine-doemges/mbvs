@@ -1,47 +1,89 @@
 package com.studio.booking.api
 
 import com.studio.booking.domain.Booking
+import com.studio.booking.domain.DurationOption
 import com.studio.booking.domain.Room
 import com.studio.booking.domain.ServiceProvider
 import com.studio.booking.service.CalendarDay
 import com.studio.booking.service.RoomWithBookings
 
-fun Room.toDto() = RoomDto(
-    id = id,
-    name = name,
-    hourlyRate = hourlyRate
-)
+fun Room.toDto() =
+    RoomDto(
+        id = id,
+        name = name,
+        hourlyRate = hourlyRate,
+    )
 
-fun ServiceProvider.toDto() = ServiceProviderDto(
-    id = id,
-    name = name
-)
+fun Room.toDetailDto(bookingCount: Long) =
+    RoomDetailDto(
+        id = id,
+        name = name,
+        hourlyRate = hourlyRate,
+        active = active,
+        sortOrder = sortOrder,
+        color = color,
+        bookingCount = bookingCount,
+    )
 
-fun Booking.toDto() = BookingDto(
-    id = id,
-    provider = provider.toDto(),
-    room = room.toDto(),
-    startTime = startTime,
-    durationMinutes = durationMinutes,
-    clientAlias = clientAlias,
-    createdAt = createdAt
-)
+fun ServiceProvider.toDto() =
+    ServiceProviderDto(
+        id = id,
+        name = name,
+    )
 
-fun Booking.toCalendarDto() = CalendarBookingDto(
-    id = id,
-    startTime = startTime,
-    durationMinutes = durationMinutes,
-    provider = provider.toDto(),
-    clientAlias = clientAlias
-)
+fun ServiceProvider.toDetailDto(bookingCount: Long) =
+    ProviderDetailDto(
+        id = id,
+        name = name,
+        active = active,
+        sortOrder = sortOrder,
+        color = color,
+        bookingCount = bookingCount,
+    )
 
-fun RoomWithBookings.toDto() = CalendarRoomDto(
-    id = room.id,
-    name = room.name,
-    bookings = bookings.map { it.toCalendarDto() }
-)
+fun DurationOption.toDto() =
+    DurationOptionDto(
+        id = id,
+        minutes = minutes,
+        label = label,
+        isVariable = isVariable,
+        minMinutes = minMinutes,
+        maxMinutes = maxMinutes,
+        stepMinutes = stepMinutes,
+        sortOrder = sortOrder,
+        active = active,
+    )
 
-fun CalendarDay.toDto() = CalendarDayDto(
-    date = date,
-    rooms = rooms.map { it.toDto() }
-)
+fun Booking.toDto() =
+    BookingDto(
+        id = id,
+        provider = provider.toDto(),
+        room = room.toDto(),
+        startTime = startTime,
+        durationMinutes = durationMinutes,
+        clientAlias = clientAlias,
+        createdAt = createdAt,
+    )
+
+fun Booking.toCalendarDto() =
+    CalendarBookingDto(
+        id = id,
+        startTime = startTime,
+        durationMinutes = durationMinutes,
+        provider = provider.toDto(),
+        clientAlias = clientAlias,
+    )
+
+fun RoomWithBookings.toDto() =
+    CalendarRoomDto(
+        id = room.id,
+        name = room.name,
+        color = room.color,
+        bookings = bookings.map { it.toCalendarDto() },
+    )
+
+fun CalendarDay.toDto() =
+    CalendarDayDto(
+        date = date,
+        rooms = rooms.map { it.toDto() },
+    )

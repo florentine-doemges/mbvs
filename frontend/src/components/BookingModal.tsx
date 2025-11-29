@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useCreateBooking, useUpdateBooking, useDeleteBooking } from '../hooks/useCalendar'
-import type { CalendarBooking, Room, ServiceProvider } from '../api/types'
-import { DURATION_OPTIONS } from '../api/types'
+import type { CalendarBooking, Room, ServiceProvider, DurationOption } from '../api/types'
 
 interface BookingModalProps {
   locationId: string
@@ -10,6 +9,7 @@ interface BookingModalProps {
   booking?: CalendarBooking
   rooms: Room[]
   providers: ServiceProvider[]
+  durationOptions: DurationOption[]
   prefilledRoomId?: string
   prefilledTime?: string
   onClose: () => void
@@ -21,6 +21,7 @@ export default function BookingModal({
   booking,
   rooms,
   providers,
+  durationOptions,
   prefilledRoomId,
   prefilledTime,
   onClose,
@@ -33,9 +34,25 @@ export default function BookingModal({
   const [roomId, setRoomId] = useState('')
   const [startDate, setStartDate] = useState('')
   const [startTime, setStartTime] = useState('')
+  const [selectedOptionId, setSelectedOptionId] = useState<string>('')
   const [durationMinutes, setDurationMinutes] = useState(60)
   const [clientAlias, setClientAlias] = useState('')
   const [error, setError] = useState<string | null>(null)
+
+  // Get the currently selected duration option
+  const selectedOption = useMemo(() => {
+    return durationOptions.find((opt) => opt.id === selectedOptionId)
+  }, [durationOptions, selectedOptionId])
+
+  // Fixed duration options (dropdown items)
+  const fixedOptions = useMemo(() => {
+    return durationOptions.filter((opt) => !opt.isVariable)
+  }, [durationOptions])
+
+  // Variable duration option (slider)
+  const variableOption = useMemo(() => {
+    return durationOptions.find((opt) => opt.isVariable)
+  }, [durationOptions])
 
   useEffect(() => {
     if (mode === 'edit' && booking) {
@@ -46,6 +63,16 @@ export default function BookingModal({
       setDurationMinutes(booking.durationMinutes)
       setClientAlias(booking.clientAlias)
       if (prefilledRoomId) setRoomId(prefilledRoomId)
+
+      // Find matching duration option or use variable if exists
+      const matchingFixed = fixedOptions.find((opt) => opt.minutes === booking.durationMinutes)
+      if (matchingFixed) {
+        setSelectedOptionId(matchingFixed.id)
+      } else if (variableOption) {
+        setSelectedOptionId(variableOption.id)
+      } else if (fixedOptions.length > 0) {
+        setSelectedOptionId(fixedOptions[0].id)
+      }
     } else {
       if (prefilledRoomId) setRoomId(prefilledRoomId)
       if (prefilledTime) {
@@ -55,8 +82,18 @@ export default function BookingModal({
       }
       if (providers.length > 0) setProviderId(providers[0].id)
       if (rooms.length > 0 && !prefilledRoomId) setRoomId(rooms[0].id)
+
+      // Default to first fixed option or variable option
+      if (fixedOptions.length > 0) {
+        const defaultOption = fixedOptions[0]
+        setSelectedOptionId(defaultOption.id)
+        setDurationMinutes(defaultOption.minutes)
+      } else if (variableOption) {
+        setSelectedOptionId(variableOption.id)
+        setDurationMinutes(variableOption.minMinutes || 60)
+      }
     }
-  }, [mode, booking, prefilledRoomId, prefilledTime, providers, rooms])
+  }, [mode, booking, prefilledRoomId, prefilledTime, providers, rooms, fixedOptions, variableOption])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -119,7 +156,7 @@ export default function BookingModal({
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={(e) => void handleSubmit(e)} className="p-6 space-y-4">
           {error && (
             <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
               {error}
@@ -196,18 +233,85 @@ export default function BookingModal({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Dauer *
             </label>
-            <select
-              value={durationMinutes}
-              onChange={(e) => setDurationMinutes(Number(e.target.value))}
-              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            >
-              {DURATION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            {/* Duration option selection */}
+            <div className="space-y-3">
+              {/* Fixed duration dropdown */}
+              {fixedOptions.length > 0 && (
+                <select
+                  value={selectedOption?.isVariable ? '' : selectedOptionId}
+                  onChange={(e) => {
+                    const opt = fixedOptions.find((o) => o.id === e.target.value)
+                    if (opt) {
+                      setSelectedOptionId(opt.id)
+                      setDurationMinutes(opt.minutes)
+                    }
+                  }}
+                  className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="" disabled>
+                    Feste Dauer wählen...
+                  </option>
+                  {fixedOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {/* Variable duration slider */}
+              {variableOption && (
+                <div
+                  className={`p-3 border rounded ${selectedOption?.isVariable ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+                >
+                  <label className="flex items-center gap-2 mb-2">
+                    <input
+                      type="radio"
+                      checked={selectedOption?.isVariable || false}
+                      onChange={() => {
+                        setSelectedOptionId(variableOption.id)
+                        setDurationMinutes(variableOption.minMinutes || 60)
+                      }}
+                      className="text-blue-600"
+                    />
+                    <span className="text-sm font-medium">{variableOption.label}</span>
+                  </label>
+                  {selectedOption?.isVariable && (
+                    <div className="mt-2">
+                      <input
+                        type="range"
+                        min={variableOption.minMinutes || 30}
+                        max={variableOption.maxMinutes || 480}
+                        step={variableOption.stepMinutes || 30}
+                        value={durationMinutes}
+                        onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-sm text-gray-600 mt-1">
+                        <span>{variableOption.minMinutes} Min</span>
+                        <span className="font-medium text-blue-600">
+                          {Math.floor(durationMinutes / 60)}:{(durationMinutes % 60).toString().padStart(2, '0')} h
+                        </span>
+                        <span>{variableOption.maxMinutes} Min</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Fallback if no options available */}
+              {fixedOptions.length === 0 && !variableOption && (
+                <input
+                  type="number"
+                  value={durationMinutes}
+                  onChange={(e) => setDurationMinutes(Number(e.target.value))}
+                  min="30"
+                  max="480"
+                  step="30"
+                  className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              )}
+            </div>
           </div>
 
           <div>
@@ -228,7 +332,7 @@ export default function BookingModal({
               {mode === 'edit' && (
                 <button
                   type="button"
-                  onClick={handleDelete}
+                  onClick={() => void handleDelete()}
                   disabled={isDeleting}
                   className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                 >

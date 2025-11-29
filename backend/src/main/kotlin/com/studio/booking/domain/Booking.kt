@@ -14,19 +14,16 @@ import java.util.UUID
 class Booking(
     @Id
     val id: UUID = UUID.randomUUID(),
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "provider_id", nullable = false)
     val provider: ServiceProvider,
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
     val room: Room,
-
     var startTime: LocalDateTime,
     var durationMinutes: Int,
     var clientAlias: String = "",
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
     fun endTime(): LocalDateTime = startTime.plusMinutes(durationMinutes.toLong())
 }

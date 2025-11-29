@@ -16,29 +16,34 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/bookings")
 class BookingController(
-    private val bookingService: BookingService
+    private val bookingService: BookingService,
 ) {
     @PostMapping
-    fun createBooking(@RequestBody request: CreateBookingRequest): ResponseEntity<BookingDto> {
-        val booking = bookingService.createBooking(
-            providerId = request.providerId,
-            roomId = request.roomId,
-            startTime = request.startTime,
-            durationMinutes = request.durationMinutes,
-            clientAlias = request.clientAlias
-        )
+    fun createBooking(
+        @RequestBody request: CreateBookingRequest,
+    ): ResponseEntity<BookingDto> {
+        val booking =
+            bookingService.createBooking(
+                providerId = request.providerId,
+                roomId = request.roomId,
+                startTime = request.startTime,
+                durationMinutes = request.durationMinutes,
+                clientAlias = request.clientAlias,
+            )
         return ResponseEntity.status(HttpStatus.CREATED).body(booking.toDto())
     }
 
     @GetMapping("/{id}")
-    fun getBooking(@PathVariable id: UUID): BookingDto {
+    fun getBooking(
+        @PathVariable id: UUID,
+    ): BookingDto {
         return bookingService.getBooking(id).toDto()
     }
 
     @PutMapping("/{id}")
     fun updateBooking(
         @PathVariable id: UUID,
-        @RequestBody request: UpdateBookingRequest
+        @RequestBody request: UpdateBookingRequest,
     ): BookingDto {
         return bookingService.updateBooking(
             bookingId = id,
@@ -46,12 +51,14 @@ class BookingController(
             roomId = request.roomId,
             startTime = request.startTime,
             durationMinutes = request.durationMinutes,
-            clientAlias = request.clientAlias
+            clientAlias = request.clientAlias,
         ).toDto()
     }
 
     @DeleteMapping("/{id}")
-    fun deleteBooking(@PathVariable id: UUID): ResponseEntity<Void> {
+    fun deleteBooking(
+        @PathVariable id: UUID,
+    ): ResponseEntity<Void> {
         bookingService.deleteBooking(id)
         return ResponseEntity.noContent().build()
     }

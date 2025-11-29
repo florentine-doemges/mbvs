@@ -1,28 +1,33 @@
-import { useState } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import Layout from './components/Layout'
 import Calendar from './pages/Calendar'
+import Rooms from './pages/Rooms'
+import RoomForm from './pages/RoomForm'
+import Providers from './pages/Providers'
+import ProviderForm from './pages/ProviderForm'
+import Settings from './pages/Settings'
+import Bookings from './pages/Bookings'
 
-const LOCATION_ID = '11111111-1111-1111-1111-111111111111'
+export const LOCATION_ID = '11111111-1111-1111-1111-111111111111'
 
 function App() {
-  const [selectedDate, setSelectedDate] = useState(new Date())
-
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Studio Mabella - Buchungssystem
-          </h1>
-        </div>
-      </header>
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <Calendar
-          locationId={LOCATION_ID}
-          selectedDate={selectedDate}
-          onDateChange={setSelectedDate}
-        />
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<Navigate to="/calendar" replace />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="bookings" element={<Bookings />} />
+          <Route path="rooms" element={<Rooms />} />
+          <Route path="rooms/new" element={<RoomForm />} />
+          <Route path="rooms/:id" element={<RoomForm />} />
+          <Route path="providers" element={<Providers />} />
+          <Route path="providers/new" element={<ProviderForm />} />
+          <Route path="providers/:id" element={<ProviderForm />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
