@@ -58,16 +58,28 @@ interface BookingRepository : JpaRepository<Booking, UUID> {
     ): Long
 
     @Query(
-        """
-        SELECT b FROM Booking b
-        WHERE b.room.location.id = :locationId
-        AND (:startDate IS NULL OR b.startTime >= :startDate)
-        AND (:endDate IS NULL OR b.startTime <= :endDate)
-        AND (:providerId IS NULL OR b.provider.id = :providerId)
-        AND (:roomId IS NULL OR b.room.id = :roomId)
-        AND (:clientSearch IS NULL OR LOWER(b.clientAlias) LIKE LOWER(CONCAT('%', :clientSearch, '%')))
-        ORDER BY b.startTime DESC
+        value = """
+        SELECT b.* FROM bookings b
+        JOIN rooms r ON r.id = b.room_id
+        WHERE r.location_id = :locationId
+        AND (CAST(:startDate AS text) IS NULL OR b.start_time >= :startDate)
+        AND (CAST(:endDate AS text) IS NULL OR b.start_time <= :endDate)
+        AND (CAST(:providerId AS text) IS NULL OR b.provider_id = :providerId)
+        AND (CAST(:roomId AS text) IS NULL OR b.room_id = :roomId)
+        AND (CAST(:clientSearch AS text) IS NULL OR LOWER(b.client_alias) LIKE '%' || LOWER(:clientSearch) || '%')
+        ORDER BY b.start_time DESC
     """,
+        countQuery = """
+        SELECT COUNT(*) FROM bookings b
+        JOIN rooms r ON r.id = b.room_id
+        WHERE r.location_id = :locationId
+        AND (CAST(:startDate AS text) IS NULL OR b.start_time >= :startDate)
+        AND (CAST(:endDate AS text) IS NULL OR b.start_time <= :endDate)
+        AND (CAST(:providerId AS text) IS NULL OR b.provider_id = :providerId)
+        AND (CAST(:roomId AS text) IS NULL OR b.room_id = :roomId)
+        AND (CAST(:clientSearch AS text) IS NULL OR LOWER(b.client_alias) LIKE '%' || LOWER(:clientSearch) || '%')
+    """,
+        nativeQuery = true,
     )
     fun findWithFilters(
         locationId: UUID,

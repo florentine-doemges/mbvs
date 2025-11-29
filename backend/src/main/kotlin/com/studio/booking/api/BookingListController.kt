@@ -33,7 +33,7 @@ class BookingListController(
         val parsedEndDate = endDate?.let { LocalDate.parse(it) }
         val parsedStatus = status?.let { BookingStatus.valueOf(it.uppercase()) }
 
-        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "startTime"))
+        val pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "start_time"))
 
         val bookingsPage =
             bookingQueryService.findBookingsWithFilters(

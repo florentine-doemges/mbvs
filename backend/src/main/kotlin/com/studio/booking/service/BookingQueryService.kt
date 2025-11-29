@@ -44,7 +44,7 @@ class BookingQueryService(
                 endDate = actualEndDate,
                 providerId = providerId,
                 roomId = roomId,
-                clientSearch = clientSearch,
+                clientSearch = clientSearch?.takeIf { it.isNotBlank() },
                 pageable = pageable,
             )
 
