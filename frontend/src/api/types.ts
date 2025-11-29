@@ -135,6 +135,44 @@ export interface UpdateBookingRequest {
   clientAlias: string
 }
 
+// Booking List types
+export interface BookingListItem {
+  id: string
+  startTime: string
+  endTime: string
+  durationMinutes: number
+  clientAlias: string
+  provider: ProviderInfo
+  room: RoomInfo
+  status: 'upcoming' | 'today' | 'past'
+  totalPrice: number
+}
+
+export interface ProviderInfo {
+  id: string
+  name: string
+  color: string
+}
+
+export interface RoomInfo {
+  id: string
+  name: string
+  color: string
+  hourlyRate: number
+}
+
+export interface BookingListResponse {
+  content: BookingListItem[]
+  page: PageInfo
+}
+
+export interface PageInfo {
+  number: number
+  size: number
+  totalElements: number
+  totalPages: number
+}
+
 export interface ErrorResponse {
   message: string
 }

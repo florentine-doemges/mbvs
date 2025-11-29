@@ -1,13 +1,155 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { format } from 'date-fns'
+import { useBookings, type BookingFilters } from '../hooks/useBookings'
+import { useRooms } from '../hooks/useRooms'
+import { useProviders } from '../hooks/useProviders'
+import { useDeleteBooking } from '../hooks/useCalendar'
+import { BookingFilters as Filters } from '../components/BookingFilters'
+import { BookingTable } from '../components/BookingTable'
+import BookingModal from '../components/BookingModal'
+import { useDurationOptions } from '../hooks/useDurationOptions'
+import type { BookingListItem } from '../api/types'
+
+const LOCATION_ID = '11111111-1111-1111-1111-111111111111'
+
 export default function Bookings() {
+  const navigate = useNavigate()
+
+  const [filters, setFilters] = useState<BookingFilters>({
+    dateRange: 'upcoming',
+    startDate: null,
+    endDate: null,
+    providerId: null,
+    roomId: null,
+    clientSearch: '',
+  })
+
+  const [page, setPage] = useState(0)
+  const [selectedBooking, setSelectedBooking] = useState<BookingListItem | null>(
+    null,
+  )
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+
+  // Data fetching
+  const { data: bookingsData, isLoading } = useBookings(LOCATION_ID, filters, page)
+  const { data: rooms = [] } = useRooms(LOCATION_ID)
+  const { data: providers = [] } = useProviders(LOCATION_ID)
+  const { data: durationOptions = [] } = useDurationOptions(LOCATION_ID)
+
+  const deleteMutation = useDeleteBooking(LOCATION_ID)
+
+  const handleEdit = (booking: BookingListItem) => {
+    setSelectedBooking(booking)
+    setIsEditModalOpen(true)
+  }
+
+  const handleDelete = async (bookingId: string) => {
+    try {
+      await deleteMutation.mutateAsync(bookingId)
+    } catch (error) {
+      alert('Fehler beim Löschen: ' + (error as Error).message)
+    }
+  }
+
+  const handleViewInCalendar = (booking: BookingListItem) => {
+    const date = format(new Date(booking.startTime), 'yyyy-MM-dd')
+    navigate(`/calendar?date=${date}`)
+  }
+
+  const handlePreviousPage = () => {
+    if (page > 0) setPage(page - 1)
+  }
+
+  const handleNextPage = () => {
+    if (bookingsData && page < bookingsData.page.totalPages - 1) {
+      setPage(page + 1)
+    }
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow p-8 text-center">
-      <h2 className="text-xl font-semibold mb-4">Buchungsliste</h2>
-      <p className="text-gray-500">
-        Die Buchungsliste wird in einem späteren Slice implementiert.
-      </p>
-      <p className="text-gray-400 text-sm mt-2">
-        Nutzen Sie vorerst den Kalender zur Verwaltung von Buchungen.
-      </p>
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Buchungsübersicht</h1>
+
+      {/* Filters */}
+      <Filters
+        filters={filters}
+        onChange={setFilters}
+        providers={providers}
+        rooms={rooms}
+      />
+
+      {/* Loading State */}
+      {isLoading && (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Lädt...</p>
+        </div>
+      )}
+
+      {/* Table */}
+      {!isLoading && (
+        <>
+          <BookingTable
+            bookings={bookingsData?.content}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onViewInCalendar={handleViewInCalendar}
+          />
+
+          {/* Pagination */}
+          {bookingsData && bookingsData.page.totalPages > 1 && (
+            <div className="mt-4 flex items-center justify-between bg-white px-4 py-3 rounded-lg shadow">
+              <div className="text-sm text-gray-700">
+                Seite {bookingsData.page.number + 1} von{' '}
+                {bookingsData.page.totalPages} ({bookingsData.page.totalElements}{' '}
+                Buchungen gesamt)
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePreviousPage}
+                  disabled={page === 0}
+                  className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  ← Zurück
+                </button>
+                <button
+                  onClick={handleNextPage}
+                  disabled={page >= bookingsData.page.totalPages - 1}
+                  className="px-4 py-2 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                >
+                  Weiter →
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && selectedBooking && (
+        <BookingModal
+          locationId={LOCATION_ID}
+          mode="edit"
+          booking={{
+            id: selectedBooking.id,
+            provider: {
+              id: selectedBooking.provider.id,
+              name: selectedBooking.provider.name,
+            },
+            startTime: selectedBooking.startTime,
+            durationMinutes: selectedBooking.durationMinutes,
+            clientAlias: selectedBooking.clientAlias,
+          }}
+          prefilledRoomId={selectedBooking.room.id}
+          providers={providers}
+          rooms={rooms}
+          durationOptions={durationOptions}
+          onClose={() => {
+            setIsEditModalOpen(false)
+            setSelectedBooking(null)
+          }}
+        />
+      )}
     </div>
   )
 }

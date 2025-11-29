@@ -1,5 +1,6 @@
 import type {
   Booking,
+  BookingListResponse,
   CalendarDay,
   CreateBookingRequest,
   CreateDurationOptionRequest,
@@ -184,6 +185,17 @@ export async function fetchCalendar(locationId: string, date: string): Promise<C
 }
 
 // Bookings
+export async function fetchBookings(
+  locationId: string,
+  params: Record<string, string>
+): Promise<BookingListResponse> {
+  const queryParams = new URLSearchParams(params)
+  const response = await fetch(
+    `${API_BASE}/locations/${locationId}/bookings?${queryParams}`
+  )
+  return handleResponse<BookingListResponse>(response)
+}
+
 export async function fetchBooking(bookingId: string): Promise<Booking> {
   const response = await fetch(`${API_BASE}/bookings/${bookingId}`)
   return handleResponse<Booking>(response)

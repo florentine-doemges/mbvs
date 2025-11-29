@@ -1,6 +1,8 @@
 package com.studio.booking.repository
 
 import com.studio.booking.domain.Booking
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
@@ -54,4 +56,26 @@ interface BookingRepository : JpaRepository<Booking, UUID> {
         providerId: UUID,
         now: LocalDateTime,
     ): Long
+
+    @Query(
+        """
+        SELECT b FROM Booking b
+        WHERE b.room.location.id = :locationId
+        AND (:startDate IS NULL OR b.startTime >= :startDate)
+        AND (:endDate IS NULL OR b.startTime <= :endDate)
+        AND (:providerId IS NULL OR b.provider.id = :providerId)
+        AND (:roomId IS NULL OR b.room.id = :roomId)
+        AND (:clientSearch IS NULL OR LOWER(b.clientAlias) LIKE LOWER(CONCAT('%', :clientSearch, '%')))
+        ORDER BY b.startTime DESC
+    """,
+    )
+    fun findWithFilters(
+        locationId: UUID,
+        startDate: LocalDateTime?,
+        endDate: LocalDateTime?,
+        providerId: UUID?,
+        roomId: UUID?,
+        clientSearch: String?,
+        pageable: Pageable,
+    ): Page<Booking>
 }

@@ -147,6 +147,44 @@ data class CalendarDayDto(
     val rooms: List<CalendarRoomDto>,
 )
 
+// Booking List DTOs
+data class BookingListItemDto(
+    val id: UUID,
+    val startTime: LocalDateTime,
+    val endTime: LocalDateTime,
+    val durationMinutes: Int,
+    val clientAlias: String,
+    val provider: ProviderInfoDto,
+    val room: RoomInfoDto,
+    val status: String,
+    val totalPrice: BigDecimal,
+)
+
+data class ProviderInfoDto(
+    val id: UUID,
+    val name: String,
+    val color: String,
+)
+
+data class RoomInfoDto(
+    val id: UUID,
+    val name: String,
+    val color: String,
+    val hourlyRate: BigDecimal,
+)
+
+data class BookingListResponse(
+    val content: List<BookingListItemDto>,
+    val page: PageInfo,
+)
+
+data class PageInfo(
+    val number: Int,
+    val size: Int,
+    val totalElements: Long,
+    val totalPages: Int,
+)
+
 // Error response
 data class ErrorResponse(
     val message: String,

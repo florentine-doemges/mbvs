@@ -4,7 +4,10 @@ import com.studio.booking.domain.Booking
 import com.studio.booking.domain.DurationOption
 import com.studio.booking.domain.Room
 import com.studio.booking.domain.ServiceProvider
+import com.studio.booking.service.BookingListItem
 import com.studio.booking.service.CalendarDay
+import com.studio.booking.service.ProviderInfo
+import com.studio.booking.service.RoomInfo
 import com.studio.booking.service.RoomWithBookings
 
 fun Room.toDto() =
@@ -86,4 +89,32 @@ fun CalendarDay.toDto() =
     CalendarDayDto(
         date = date,
         rooms = rooms.map { it.toDto() },
+    )
+
+fun BookingListItem.toDto() =
+    BookingListItemDto(
+        id = id,
+        startTime = startTime,
+        endTime = endTime,
+        durationMinutes = durationMinutes,
+        clientAlias = clientAlias,
+        provider = provider.toDto(),
+        room = room.toDto(),
+        status = status.name.lowercase(),
+        totalPrice = totalPrice,
+    )
+
+fun ProviderInfo.toDto() =
+    ProviderInfoDto(
+        id = id,
+        name = name,
+        color = color,
+    )
+
+fun RoomInfo.toDto() =
+    RoomInfoDto(
+        id = id,
+        name = name,
+        color = color,
+        hourlyRate = hourlyRate,
     )
