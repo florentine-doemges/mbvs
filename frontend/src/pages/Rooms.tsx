@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useRooms, useDeleteRoom } from '../hooks/useRooms'
 import { LOCATION_ID } from '../App'
 
 export default function Rooms() {
+  const navigate = useNavigate()
   const [showInactive, setShowInactive] = useState(false)
   const { data: rooms, isLoading, error } = useRooms(LOCATION_ID, showInactive)
   const deleteRoom = useDeleteRoom()
@@ -86,7 +87,11 @@ export default function Rooms() {
                     <span className="text-sm text-gray-600">{room.color}</span>
                   </div>
                 </td>
-                <td className="p-3 text-right">
+                <td
+                  className="p-3 text-right cursor-pointer hover:bg-gray-100 font-medium"
+                  onClick={() => void navigate(`/rooms/${room.id}`)}
+                  title="Klicken zum Bearbeiten"
+                >
                   {room.hourlyRate.toFixed(2)} €
                 </td>
                 <td className="p-3 text-center">

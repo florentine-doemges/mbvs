@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useUpgrades, useDeleteUpgrade } from '../hooks/useUpgrades'
 
 export default function Upgrades() {
+  const navigate = useNavigate()
   const [showInactive, setShowInactive] = useState(false)
   const { data: upgrades, isLoading, error } = useUpgrades(showInactive)
   const deleteUpgrade = useDeleteUpgrade()
@@ -81,7 +82,13 @@ export default function Upgrades() {
                 className={`border-t ${!upgrade.active ? 'bg-gray-50 text-gray-500' : ''}`}
               >
                 <td className="p-3 font-medium">{upgrade.name}</td>
-                <td className="p-3 text-right">{formatPrice(upgrade.price)}</td>
+                <td
+                  className="p-3 text-right cursor-pointer hover:bg-gray-100 font-medium"
+                  onClick={() => void navigate(`/upgrades/${upgrade.id}`)}
+                  title="Klicken zum Bearbeiten"
+                >
+                  {formatPrice(upgrade.price)}
+                </td>
                 <td className="p-3 text-center">
                   {upgrade.active ? (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
