@@ -20,6 +20,10 @@ import type {
   Upgrade,
   RoomPrice,
   UpgradePrice,
+  RoomPriceTier,
+  CreatePriceTierRequest,
+  UpdatePriceTierRequest,
+  PricePreview,
 } from './types'
 
 const API_BASE = '/api'
@@ -336,4 +340,59 @@ export async function addUpgradePrice(upgradeId: string, price: number, validFro
     }),
   })
   return handleResponse<UpgradePrice>(response)
+}
+
+// Price Tiers
+export async function fetchPriceTiers(roomId: string, priceId: string): Promise<RoomPriceTier[]> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers`)
+  return handleResponse<RoomPriceTier[]>(response)
+}
+
+export async function createPriceTier(
+  roomId: string,
+  priceId: string,
+  request: CreatePriceTierRequest
+): Promise<RoomPriceTier> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  })
+  return handleResponse<RoomPriceTier>(response)
+}
+
+export async function updatePriceTier(
+  roomId: string,
+  priceId: string,
+  tierId: string,
+  request: UpdatePriceTierRequest
+): Promise<RoomPriceTier> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers/${tierId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  })
+  return handleResponse<RoomPriceTier>(response)
+}
+
+export async function deletePriceTier(
+  roomId: string,
+  priceId: string,
+  tierId: string
+): Promise<void> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers/${tierId}`, {
+    method: 'DELETE',
+  })
+  if (!response.ok) {
+    const error = (await response.json()) as ErrorResponse
+    throw new Error(error.message)
+  }
+}
+
+export async function fetchPricePreview(
+  roomId: string,
+  priceId: string
+): Promise<PricePreview[]> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/preview`)
+  return handleResponse<PricePreview[]>(response)
 }

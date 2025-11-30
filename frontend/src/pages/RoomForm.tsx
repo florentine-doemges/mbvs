@@ -5,6 +5,7 @@ import { de } from 'date-fns/locale'
 import { useRoom, useCreateRoom, useUpdateRoom } from '../hooks/useRooms'
 import { useRoomPriceHistory, useAddRoomPrice } from '../hooks/usePrices'
 import { LOCATION_ID } from '../App'
+import PriceTierForm from '../components/PriceTierForm'
 
 const DEFAULT_COLORS = [
   '#EF4444',
@@ -209,6 +210,13 @@ export default function RoomForm() {
               </table>
             </div>
           </div>
+        )}
+
+        {isEditing && id && priceHistory && priceHistory.length > 0 && (
+          <PriceTierForm
+            roomId={id}
+            priceId={priceHistory.find((p) => !p.validTo)?.id || ''}
+          />
         )}
 
         <div>

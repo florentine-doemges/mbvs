@@ -228,3 +228,36 @@ export interface UpgradePrice {
   validFrom: string
   validTo: string | null
 }
+
+// Price Tiers
+export type PriceType = 'FIXED' | 'HOURLY'
+
+export interface RoomPriceTier {
+  id: string
+  fromMinutes: number
+  toMinutes: number | null
+  priceType: PriceType
+  price: number
+  sortOrder: number
+}
+
+export interface CreatePriceTierRequest {
+  fromMinutes: number
+  toMinutes: number | null
+  priceType: PriceType
+  price: number
+  sortOrder: number
+}
+
+export interface UpdatePriceTierRequest {
+  fromMinutes: number
+  toMinutes: number | null
+  priceType: PriceType
+  price: number
+  sortOrder: number
+}
+
+export interface PricePreview {
+  duration: number
+  price: number
+}
