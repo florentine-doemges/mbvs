@@ -9,6 +9,7 @@ import com.studio.booking.domain.DurationOption
 import com.studio.booking.domain.Location
 import com.studio.booking.domain.Room
 import com.studio.booking.domain.RoomPrice
+import com.studio.booking.domain.RoomPriceTier
 import com.studio.booking.domain.ServiceProvider
 import com.studio.booking.domain.Upgrade
 import com.studio.booking.domain.UpgradePrice
@@ -221,4 +222,16 @@ fun BillingItemUpgrade.toDto() =
         frozenQuantity = frozenQuantity,
         frozenUpgradePriceAmount = frozenUpgradePriceAmount,
         totalAmount = totalAmount,
+    )
+
+fun RoomPriceTier.toDto() =
+    RoomPriceTierDto(
+        id = id,
+        roomPriceId = roomPrice.id,
+        fromMinutes = fromMinutes,
+        toMinutes = toMinutes,
+        priceType = priceType.name,
+        price = price,
+        sortOrder = sortOrder,
+        createdAt = createdAt,
     )

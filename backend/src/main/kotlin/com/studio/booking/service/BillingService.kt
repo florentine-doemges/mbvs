@@ -25,6 +25,7 @@ class BillingService(
     private val serviceProviderRepository: ServiceProviderRepository,
     private val roomPriceRepository: RoomPriceRepository,
     private val upgradePriceRepository: UpgradePriceRepository,
+    private val priceCalculationService: PriceCalculationService,
 ) {
     /**
      * Create billings for selected bookings.
@@ -109,13 +110,8 @@ class BillingService(
                     "No room price found for room ${booking.room.id} at $bookingStartTime",
                 )
 
-        // Calculate room subtotal (hourly rate * duration in hours)
-        val durationHours =
-            BigDecimal(booking.durationMinutes)
-                .divide(BigDecimal(60), 4, RoundingMode.HALF_UP)
-        val subtotalRoom =
-            roomPrice.price.multiply(durationHours)
-                .setScale(2, RoundingMode.HALF_UP)
+        // Calculate room subtotal using tiered pricing if available
+        val subtotalRoom = priceCalculationService.calculateRoomPrice(roomPrice, booking.durationMinutes)
 
         // Create billing item
         val billingItem =

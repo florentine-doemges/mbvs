@@ -257,6 +257,39 @@ data class UpdatePriceRequest(
     val validFrom: OffsetDateTime,
 )
 
+// Price Tier DTOs
+data class RoomPriceTierDto(
+    val id: UUID,
+    val roomPriceId: UUID,
+    val fromMinutes: Int,
+    val toMinutes: Int?,
+    val priceType: String, // FIXED or HOURLY
+    val price: BigDecimal,
+    val sortOrder: Int,
+    val createdAt: OffsetDateTime,
+)
+
+data class CreatePriceTierRequest(
+    val fromMinutes: Int,
+    val toMinutes: Int?,
+    val priceType: String, // FIXED or HOURLY
+    val price: BigDecimal,
+    val sortOrder: Int = 0,
+)
+
+data class UpdatePriceTierRequest(
+    val fromMinutes: Int,
+    val toMinutes: Int?,
+    val priceType: String, // FIXED or HOURLY
+    val price: BigDecimal,
+    val sortOrder: Int,
+)
+
+data class PricePreviewDto(
+    val durationMinutes: Int,
+    val price: BigDecimal,
+)
+
 // Billing DTOs
 data class BillingDto(
     val id: UUID,
