@@ -191,10 +191,11 @@ export default function PriceTierForm({ roomId, priceId }: PriceTierFormProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="fromMinutes" className="block text-xs font-medium text-gray-700 mb-1">
                 Von (Minuten) *
               </label>
               <input
+                id="fromMinutes"
                 type="number"
                 value={fromMinutes}
                 onChange={(e) => setFromMinutes(e.target.value)}
@@ -207,10 +208,11 @@ export default function PriceTierForm({ roomId, priceId }: PriceTierFormProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="toMinutes" className="block text-xs font-medium text-gray-700 mb-1">
                 Bis (Minuten)
               </label>
               <input
+                id="toMinutes"
                 type="number"
                 value={toMinutes}
                 onChange={(e) => setToMinutes(e.target.value)}
@@ -223,8 +225,9 @@ export default function PriceTierForm({ roomId, priceId }: PriceTierFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Typ *</label>
+            <label htmlFor="priceType" className="block text-xs font-medium text-gray-700 mb-1">Typ *</label>
             <select
+              id="priceType"
               value={priceType}
               onChange={(e) => setPriceType(e.target.value as PriceType)}
               className="w-full px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -240,10 +243,11 @@ export default function PriceTierForm({ roomId, priceId }: PriceTierFormProps) {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">
+            <label htmlFor="tierPrice" className="block text-xs font-medium text-gray-700 mb-1">
               Preis (€) *
             </label>
             <input
+              id="tierPrice"
               type="number"
               value={price}
               onChange={(e) => setPrice(e.target.value)}

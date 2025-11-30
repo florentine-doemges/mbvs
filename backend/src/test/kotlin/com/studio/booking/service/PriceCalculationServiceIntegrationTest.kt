@@ -152,37 +152,62 @@ class PriceCalculationServiceIntegrationTest {
         private val tiers: List<RoomPriceTier>,
     ) : com.studio.booking.repository.RoomPriceTierRepository {
         override fun findByRoomPriceIdOrderBySortOrder(roomPriceId: java.util.UUID) = tiers
+
         override fun findByRoomPriceIdOrderByFromMinutes(roomPriceId: java.util.UUID) = tiers.sortedBy { it.fromMinutes }
+
         override fun deleteByRoomPriceId(roomPriceId: java.util.UUID) {}
+
         override fun existsByRoomPriceId(roomPriceId: java.util.UUID) = tiers.isNotEmpty()
 
         // Unused methods
         override fun <S : RoomPriceTier> save(entity: S) = entity
+
         override fun <S : RoomPriceTier> saveAll(entities: MutableIterable<S>) = entities.toList()
+
         override fun findById(id: java.util.UUID) = java.util.Optional.empty<RoomPriceTier>()
+
         override fun existsById(id: java.util.UUID) = false
+
         override fun findAll() = tiers
+
         override fun findAll(sort: org.springframework.data.domain.Sort) = tiers
-        override fun findAll(pageable: org.springframework.data.domain.Pageable) =
-            org.springframework.data.domain.PageImpl(tiers)
+
+        override fun findAll(pageable: org.springframework.data.domain.Pageable) = org.springframework.data.domain.PageImpl(tiers)
 
         override fun findAllById(ids: MutableIterable<java.util.UUID>) = emptyList<RoomPriceTier>()
+
         override fun count() = tiers.size.toLong()
+
         override fun deleteById(id: java.util.UUID) {}
+
         override fun delete(entity: RoomPriceTier) {}
+
         override fun deleteAllById(ids: MutableIterable<java.util.UUID>) {}
+
         override fun deleteAll(entities: MutableIterable<RoomPriceTier>) {}
+
         override fun deleteAll() {}
+
         override fun flush() {}
+
         override fun <S : RoomPriceTier> saveAndFlush(entity: S) = entity
+
         override fun <S : RoomPriceTier> saveAllAndFlush(entities: MutableIterable<S>) = entities.toList()
+
         override fun deleteAllInBatch(entities: MutableIterable<RoomPriceTier>) {}
+
         override fun deleteAllByIdInBatch(ids: MutableIterable<java.util.UUID>) {}
+
         override fun deleteAllInBatch() {}
+
         override fun getOne(id: java.util.UUID) = throw UnsupportedOperationException()
+
         override fun getById(id: java.util.UUID) = throw UnsupportedOperationException()
+
         override fun getReferenceById(id: java.util.UUID) = throw UnsupportedOperationException()
+
         override fun <S : RoomPriceTier> findAll(example: org.springframework.data.domain.Example<S>) = emptyList<S>()
+
         override fun <S : RoomPriceTier> findAll(
             example: org.springframework.data.domain.Example<S>,
             sort: org.springframework.data.domain.Sort,
@@ -194,8 +219,11 @@ class PriceCalculationServiceIntegrationTest {
         ) = org.springframework.data.domain.PageImpl(emptyList<S>())
 
         override fun <S : RoomPriceTier> count(example: org.springframework.data.domain.Example<S>) = 0L
+
         override fun <S : RoomPriceTier> exists(example: org.springframework.data.domain.Example<S>) = false
+
         override fun <S : RoomPriceTier> findOne(example: org.springframework.data.domain.Example<S>) = java.util.Optional.empty<S>()
+
         override fun <S : RoomPriceTier, R : Any> findBy(
             example: org.springframework.data.domain.Example<S>,
             queryFunction: java.util.function.Function<org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery<S>, R>,

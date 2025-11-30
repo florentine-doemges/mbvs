@@ -4,6 +4,7 @@ import {
   navigateTo,
   TEST_ROOMS,
   createTestRoom,
+  getCurrentRoomPrice,
   API_BASE,
 } from './helpers'
 
@@ -51,14 +52,14 @@ test.describe('UC-10: Preisstaffeln', () => {
     // Verify: Description updates
     await expect(page.getByText('Fester Preis für den gesamten Zeitraum')).toBeVisible()
 
-    // Save tier
+    // Save tier - wait for the API call to complete
     await page.getByRole('button', { name: 'Hinzufügen' }).click()
 
-    // Verify: Tier appears in table
-    await expect(page.getByText('0 Min')).toBeVisible()
-    await expect(page.getByText('30 Min')).toBeVisible()
-    await expect(page.getByText('Festpreis')).toBeVisible()
-    await expect(page.getByText('50.00 €')).toBeVisible()
+    // Wait for tier to appear (React Query will refetch automatically)
+    await expect(page.getByText('0 Min').first()).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('30 Min').first()).toBeVisible()
+    await expect(page.getByText('Festpreis').first()).toBeVisible()
+    await expect(page.getByText('50.00 €').first()).toBeVisible()
 
     // Verify: Form is hidden after adding
     await expect(page.getByText('Neue Preisstufe')).not.toBeVisible()
@@ -75,10 +76,19 @@ test.describe('UC-10: Preisstaffeln', () => {
     await page.getByLabel('Bis (Minuten)').fill('30')
     await page.getByLabel('Typ *').selectOption('FIXED')
     await page.getByLabel('Preis (€) *').fill('75.00')
+    const createTier1Promise = page.waitForResponse(response =>
+      response.url().includes('/tiers') && response.request().method() === 'POST'
+    )
+    const refetchTiers1Promise = page.waitForResponse(response =>
+      response.url().includes('/tiers') && response.request().method() === 'GET'
+    )
     await page.getByRole('button', { name: 'Hinzufügen' }).click()
+    const tier1Response = await createTier1Promise
+    expect(tier1Response.ok()).toBeTruthy()
+    await refetchTiers1Promise
 
     // Wait for first tier to be added
-    await expect(page.getByText('75.00 €').first()).toBeVisible()
+    await expect(page.getByText('75.00 €').first()).toBeVisible({ timeout: 10000 })
 
     // Add second tier: 30 min onwards = 120€/hour
     await page.getByText('+ Staffel hinzufügen').click()
@@ -86,11 +96,19 @@ test.describe('UC-10: Preisstaffeln', () => {
     // Leave "Bis" empty for infinity
     await page.getByLabel('Typ *').selectOption('HOURLY')
     await page.getByLabel('Preis (€) *').fill('120.00')
+    const createTier2Promise = page.waitForResponse(response =>
+      response.url().includes('/tiers') && response.request().method() === 'POST'
+    )
+    const refetchTiers2Promise = page.waitForResponse(response =>
+      response.url().includes('/tiers') && response.request().method() === 'GET'
+    )
     await page.getByRole('button', { name: 'Hinzufügen' }).click()
+    await createTier2Promise
+    await refetchTiers2Promise
 
     // Verify: Both tiers are shown
-    const rows = page.locator('tbody tr')
-    await expect(rows).toHaveCount(2)
+    await expect(page.getByText('0 Min').first()).toBeVisible()
+    await expect(page.getByText('30 Min').first()).toBeVisible()
 
     // Verify first tier
     await expect(page.getByText('75.00 €')).toBeVisible()
@@ -98,7 +116,7 @@ test.describe('UC-10: Preisstaffeln', () => {
 
     // Verify second tier
     await expect(page.getByText('120.00 €/Std')).toBeVisible()
-    await expect(page.getByText('Stundensatz')).toBeVisible()
+    await expect(page.getByText('Stundensatz').first()).toBeVisible()
     await expect(page.getByText('∞')).toBeVisible() // Infinity symbol
   })
 
@@ -107,11 +125,7 @@ test.describe('UC-10: Preisstaffeln', () => {
     const room = await createTestRoom(page, TEST_ROOMS.red)
 
     // Get current price
-    const priceHistoryResponse = await page.request.get(
-      `${API_BASE}/rooms/${room.id}/prices`
-    )
-    const priceHistory = await priceHistoryResponse.json()
-    const currentPrice = priceHistory.find((p: any) => !p.validTo)
+    const currentPrice = await getCurrentRoomPrice(page, room.id)
 
     // Create tier via API
     await page.request.post(
@@ -165,7 +179,15 @@ test.describe('UC-10: Preisstaffeln', () => {
 
     // Fix and try again
     await page.getByLabel('Bis (Minuten)').fill('60')
+    const createTierPromise = page.waitForResponse(response =>
+      response.url().includes('/tiers') && response.request().method() === 'POST'
+    )
+    const refetchTiersPromise = page.waitForResponse(response =>
+      response.url().includes('/tiers') && response.request().method() === 'GET'
+    )
     await page.getByRole('button', { name: 'Hinzufügen' }).click()
+    await createTierPromise
+    await refetchTiersPromise
 
     // Verify: Tier is created successfully
     await expect(page.getByText('50.00 €')).toBeVisible()
@@ -184,8 +206,8 @@ test.describe('UC-10: Preisstaffeln', () => {
     await page.getByLabel('Von (Minuten) *').fill('0')
     await page.getByLabel('Preis (€) *').fill('50.00')
 
-    // Cancel
-    await page.getByRole('button', { name: 'Abbrechen' }).click()
+    // Cancel (use first() since there are multiple Abbrechen buttons on the page)
+    await page.getByRole('button', { name: 'Abbrechen' }).first().click()
 
     // Verify: Form is hidden
     await expect(page.getByText('Neue Preisstufe')).not.toBeVisible()
@@ -198,11 +220,7 @@ test.describe('UC-10: Preisstaffeln', () => {
     // Setup: Create room with tiers of different durations
     const room = await createTestRoom(page, TEST_ROOMS.red)
 
-    const priceHistoryResponse = await page.request.get(
-      `${API_BASE}/rooms/${room.id}/prices`
-    )
-    const priceHistory = await priceHistoryResponse.json()
-    const currentPrice = priceHistory.find((p: any) => !p.validTo)
+    const currentPrice = await getCurrentRoomPrice(page, room.id)
 
     // Create tiers with different time formats
     await page.request.post(
@@ -247,10 +265,10 @@ test.describe('UC-10: Preisstaffeln', () => {
     // Execute: Navigate to room edit
     await navigateTo(page, `/rooms/${room.id}`)
 
-    // Verify: Time formatting
-    await expect(page.getByText('15 Min')).toBeVisible() // Just minutes
-    await expect(page.getByText('1 Std')).toBeVisible() // Just hours
-    await expect(page.getByText('1:30 Std')).toBeVisible() // Hours and minutes
+    // Verify: Time formatting (use first() since column headers also contain these)
+    await expect(page.getByText('15 Min').first()).toBeVisible() // Just minutes
+    await expect(page.getByText('1 Std').first()).toBeVisible() // Just hours
+    await expect(page.getByText('1:30 Std').first()).toBeVisible() // Hours and minutes
   })
 
   test('UC-10.8: Preisstaffel wird bei Preisänderung nicht überschrieben', async ({
@@ -259,11 +277,7 @@ test.describe('UC-10: Preisstaffeln', () => {
     // Setup: Create room with tier
     const room = await createTestRoom(page, TEST_ROOMS.red)
 
-    const priceHistoryResponse = await page.request.get(
-      `${API_BASE}/rooms/${room.id}/prices`
-    )
-    const priceHistory = await priceHistoryResponse.json()
-    const currentPrice = priceHistory.find((p: any) => !p.validTo)
+    const currentPrice = await getCurrentRoomPrice(page, room.id)
 
     // Create tier
     await page.request.post(
@@ -309,11 +323,7 @@ test.describe('UC-10: Preisstaffeln', () => {
     // 30 min = 75€, then 120€/hour
     const room = await createTestRoom(page, TEST_ROOMS.red)
 
-    const priceHistoryResponse = await page.request.get(
-      `${API_BASE}/rooms/${room.id}/prices`
-    )
-    const priceHistory = await priceHistoryResponse.json()
-    const currentPrice = priceHistory.find((p: any) => !p.validTo)
+    const currentPrice = await getCurrentRoomPrice(page, room.id)
 
     // Tier 1: 0-30 min = 75€ FIXED
     await page.request.post(
@@ -356,17 +366,25 @@ test.describe('UC-10: Preisstaffeln', () => {
     )
     const provider = await providerResponse.json()
 
+    // Create booking for 90 minutes (start tomorrow to avoid past time validation)
+    const startTime = new Date()
+    startTime.setDate(startTime.getDate() + 1)
+    startTime.setHours(10, 0, 0, 0)
+
     const bookingResponse = await page.request.post(`${API_BASE}/bookings`, {
       data: {
         providerId: provider.id,
         roomId: room.id,
-        startTime: new Date().toISOString(),
+        startTime: startTime.toISOString(),
         durationMinutes: 90,
         clientAlias: 'E2E Test Client',
       },
     })
 
-    expect(bookingResponse.ok()).toBeTruthy()
+    if (!bookingResponse.ok()) {
+      const error = await bookingResponse.text()
+      throw new Error(`Booking creation failed: ${bookingResponse.status()} - ${error}`)
+    }
     const booking = await bookingResponse.json()
 
     // Verify: The booking was created
@@ -405,16 +423,25 @@ test.describe('UC-10: Preisstaffeln', () => {
     )
     const provider = await providerResponse.json()
 
-    // Create booking for 90 minutes
-    await page.request.post(`${API_BASE}/bookings`, {
+    // Create booking for 90 minutes (start tomorrow to avoid past time validation)
+    const startTime = new Date()
+    startTime.setDate(startTime.getDate() + 1)
+    startTime.setHours(10, 0, 0, 0)
+
+    const bookingResponse = await page.request.post(`${API_BASE}/bookings`, {
       data: {
         providerId: provider.id,
         roomId: room.id,
-        startTime: new Date().toISOString(),
+        startTime: startTime.toISOString(),
         durationMinutes: 90,
         clientAlias: 'E2E Test Client No Tiers',
       },
     })
+
+    if (!bookingResponse.ok()) {
+      const error = await bookingResponse.text()
+      throw new Error(`Booking creation failed: ${bookingResponse.status()} - ${error}`)
+    }
 
     // Navigate to bookings list
     await navigateTo(page, '/bookings')

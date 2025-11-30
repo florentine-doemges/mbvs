@@ -118,10 +118,11 @@ export default function RoomForm() {
         )}
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="roomName" className="block text-sm font-medium text-gray-700 mb-1">
             Name *
           </label>
           <input
+            id="roomName"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -133,10 +134,11 @@ export default function RoomForm() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="hourlyRate" className="block text-sm font-medium text-gray-700 mb-1">
             Stundensatz (€) *
           </label>
           <input
+            id="hourlyRate"
             type="number"
             value={hourlyRate}
             onChange={(e) => setHourlyRate(e.target.value)}
@@ -250,10 +252,11 @@ export default function RoomForm() {
         {isEditing && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="sortOrder" className="block text-sm font-medium text-gray-700 mb-1">
                 Sortierung
               </label>
               <input
+                id="sortOrder"
                 type="number"
                 value={sortOrder}
                 onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)}

@@ -2,6 +2,7 @@ package com.studio.booking.service
 
 import com.studio.booking.domain.BookingUpgrade
 import com.studio.booking.repository.BookingRepository
+import com.studio.booking.repository.RoomPriceRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -12,6 +13,8 @@ import java.util.UUID
 @Service
 class BookingQueryService(
     private val bookingRepository: BookingRepository,
+    private val priceCalculationService: PriceCalculationService,
+    private val roomPriceRepository: RoomPriceRepository,
 ) {
     fun findBookingsWithFilters(
         locationId: UUID,
@@ -72,7 +75,7 @@ class BookingQueryService(
                     ),
                 upgrades = booking.bookingUpgrades.toList(),
                 status = calculateStatus(booking.startTime),
-                totalPrice = calculateTotalPrice(booking.durationMinutes, booking.room.hourlyRate, booking.bookingUpgrades),
+                totalPrice = calculateTotalPrice(booking),
             )
         }
     }
@@ -88,14 +91,28 @@ class BookingQueryService(
         }
     }
 
-    private fun calculateTotalPrice(
-        durationMinutes: Int,
-        hourlyRate: java.math.BigDecimal,
-        bookingUpgrades: Set<BookingUpgrade>,
-    ): java.math.BigDecimal {
-        val hours = durationMinutes.toBigDecimal().divide(60.toBigDecimal(), 2, java.math.RoundingMode.HALF_UP)
-        val roomPrice = hourlyRate.multiply(hours)
-        val upgradesPrice = bookingUpgrades.sumOf { it.upgrade.price.multiply(it.quantity.toBigDecimal()) }
+    private fun calculateTotalPrice(booking: com.studio.booking.domain.Booking): java.math.BigDecimal {
+        // Get the current room price (the one that was active at booking time or is currently active)
+        // For simplicity, we use the current price. In a real system, you'd want to store the price at booking time.
+        val currentPrice = roomPriceRepository.findByRoomIdAndValidToIsNull(booking.room.id)
+
+        val roomPrice =
+            if (currentPrice != null) {
+                // Use tiered pricing if available
+                priceCalculationService.calculateRoomPrice(currentPrice, booking.durationMinutes)
+            } else {
+                // Fallback to simple hourly rate
+                val hours =
+                    booking.durationMinutes
+                        .toBigDecimal()
+                        .divide(60.toBigDecimal(), 2, java.math.RoundingMode.HALF_UP)
+                booking.room.hourlyRate.multiply(hours)
+            }
+
+        val upgradesPrice =
+            booking.bookingUpgrades.sumOf {
+                it.upgrade.price.multiply(it.quantity.toBigDecimal())
+            }
         return roomPrice.add(upgradesPrice)
     }
 }

@@ -148,7 +148,25 @@ export async function createTestRoom(page: Page, roomData: typeof TEST_ROOMS.red
     data: roomData
   })
   expect(response.ok()).toBeTruthy()
-  return await response.json()
+  const room = await response.json()
+
+  // Create initial price for the room (mimics what happens when editing a room's price)
+  const priceResponse = await page.request.post(`${API_BASE}/rooms/${room.id}/prices`, {
+    data: {
+      price: roomData.hourlyRate,
+      validFrom: new Date().toISOString()
+    }
+  })
+  expect(priceResponse.ok()).toBeTruthy()
+
+  return room
+}
+
+export async function getCurrentRoomPrice(page: Page, roomId: string) {
+  const response = await page.request.get(`${API_BASE}/rooms/${roomId}/prices`)
+  expect(response.ok()).toBeTruthy()
+  const prices = await response.json()
+  return prices.find((p: any) => !p.validTo)
 }
 
 export async function createTestProvider(page: Page, providerData: typeof TEST_PROVIDERS.anna) {

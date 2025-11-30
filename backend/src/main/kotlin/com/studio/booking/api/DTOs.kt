@@ -263,7 +263,8 @@ data class RoomPriceTierDto(
     val roomPriceId: UUID,
     val fromMinutes: Int,
     val toMinutes: Int?,
-    val priceType: String, // FIXED or HOURLY
+    // FIXED or HOURLY
+    val priceType: String,
     val price: BigDecimal,
     val sortOrder: Int,
     val createdAt: OffsetDateTime,
@@ -272,7 +273,8 @@ data class RoomPriceTierDto(
 data class CreatePriceTierRequest(
     val fromMinutes: Int,
     val toMinutes: Int?,
-    val priceType: String, // FIXED or HOURLY
+    // FIXED or HOURLY
+    val priceType: String,
     val price: BigDecimal,
     val sortOrder: Int = 0,
 )
@@ -280,7 +282,8 @@ data class CreatePriceTierRequest(
 data class UpdatePriceTierRequest(
     val fromMinutes: Int,
     val toMinutes: Int?,
-    val priceType: String, // FIXED or HOURLY
+    // FIXED or HOURLY
+    val priceType: String,
     val price: BigDecimal,
     val sortOrder: Int,
 )
