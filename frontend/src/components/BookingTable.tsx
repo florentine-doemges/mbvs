@@ -189,7 +189,11 @@ export function BookingTable({
                     <td className="px-4 py-3">
                       <StatusBadge status={booking.status} />
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => !editing && startEditing(booking)}
+                      title={!editing ? 'Klicken zum Bearbeiten' : ''}
+                    >
                       {editing ? (
                         <input
                           type="datetime-local"
@@ -201,12 +205,17 @@ export function BookingTable({
                             })
                           }
                           className="px-2 py-1 border rounded text-sm w-full"
+                          onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
                         format(new Date(booking.startTime), 'dd.MM.yyyy HH:mm')
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td
+                      className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                      onClick={() => !editing && startEditing(booking)}
+                      title={!editing ? 'Klicken zum Bearbeiten' : ''}
+                    >
                       {editing ? (
                         <select
                           value={editingBooking!.providerId}
@@ -217,6 +226,7 @@ export function BookingTable({
                             })
                           }
                           className="px-2 py-1 border rounded text-sm w-full"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {providers.map((provider) => (
                             <option key={provider.id} value={provider.id}>
@@ -233,7 +243,11 @@ export function BookingTable({
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td
+                      className="px-4 py-3 cursor-pointer hover:bg-gray-100"
+                      onClick={() => !editing && startEditing(booking)}
+                      title={!editing ? 'Klicken zum Bearbeiten' : ''}
+                    >
                       {editing ? (
                         <select
                           value={editingBooking!.roomId}
@@ -244,6 +258,7 @@ export function BookingTable({
                             })
                           }
                           className="px-2 py-1 border rounded text-sm w-full"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {rooms.map((room) => (
                             <option key={room.id} value={room.id}>
@@ -260,7 +275,11 @@ export function BookingTable({
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => !editing && startEditing(booking)}
+                      title={!editing ? 'Klicken zum Bearbeiten' : ''}
+                    >
                       {editing ? (
                         <select
                           value={editingBooking!.durationMinutes}
@@ -271,6 +290,7 @@ export function BookingTable({
                             })
                           }
                           className="px-2 py-1 border rounded text-sm w-full"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {durationOptions.map((option) => (
                             <option key={option.id} value={option.minutes}>
@@ -282,7 +302,11 @@ export function BookingTable({
                         `${booking.durationMinutes} min`
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 cursor-pointer hover:bg-gray-100"
+                      onClick={() => !editing && startEditing(booking)}
+                      title={!editing ? 'Klicken zum Bearbeiten' : ''}
+                    >
                       {editing ? (
                         <input
                           type="text"
@@ -295,6 +319,7 @@ export function BookingTable({
                           }
                           placeholder="Kundenname"
                           className="px-2 py-1 border rounded text-sm w-full"
+                          onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
                         booking.clientAlias || '-'
@@ -333,18 +358,11 @@ export function BookingTable({
                             📅
                           </button>
                           <button
-                            onClick={() => startEditing(booking)}
-                            className="text-blue-600 hover:text-blue-800 mr-3"
-                            title="Inline bearbeiten"
-                          >
-                            ✏️
-                          </button>
-                          <button
                             onClick={() => onEdit(booking)}
-                            className="text-purple-600 hover:text-purple-800 mr-3"
-                            title="Im Modal bearbeiten"
+                            className="text-blue-600 hover:text-blue-800 mr-3"
+                            title="Erweitert bearbeiten (mit Upgrades)"
                           >
-                            📝
+                            ⚙️
                           </button>
                           <button
                             onClick={() => handleDelete(booking.id)}
