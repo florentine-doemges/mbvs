@@ -34,13 +34,13 @@ export default function RoomForm() {
   const [active, setActive] = useState(true)
   const [sortOrder, setSortOrder] = useState(0)
   const [error, setError] = useState<string | null>(null)
-  const [isEditingPrice, setIsEditingPrice] = useState(false)
-  const [newPrice, setNewPrice] = useState('')
+  const [originalHourlyRate, setOriginalHourlyRate] = useState('')
 
   useEffect(() => {
     if (room) {
       setName(room.name)
       setHourlyRate(room.hourlyRate.toString())
+      setOriginalHourlyRate(room.hourlyRate.toString())
       setColor(room.color)
       setActive(room.active)
       setSortOrder(room.sortOrder)
@@ -59,6 +59,15 @@ export default function RoomForm() {
 
     try {
       if (isEditing && id) {
+        // Check if price changed
+        const priceChanged = originalHourlyRate !== hourlyRate
+
+        if (priceChanged) {
+          // Create new price entry (this automatically updates validTo on old price)
+          await addPrice.mutateAsync(rate)
+        }
+
+        // Update room details (name, color, etc.)
         await updateRoom.mutateAsync({
           roomId: id,
           request: {
@@ -82,28 +91,8 @@ export default function RoomForm() {
     }
   }
 
-  const handleAddPrice = async () => {
-    setError(null)
-    const price = parseFloat(newPrice)
-    if (isNaN(price) || price <= 0) {
-      setError('Bitte geben Sie einen gültigen Preis ein')
-      return
-    }
-
-    try {
-      await addPrice.mutateAsync(price)
-      setNewPrice('')
-      setIsEditingPrice(false)
-      // Update the hourlyRate field to show the new current price
-      setHourlyRate(price.toString())
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Hinzufügen des Preises')
-    }
-  }
-
   const handleSelectHistoricalPrice = (price: number) => {
-    setNewPrice(price.toString())
-    setIsEditingPrice(true)
+    setHourlyRate(price.toString())
   }
 
   if (isEditing && isLoading) {
@@ -145,53 +134,21 @@ export default function RoomForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Stundensatz (€) *
-            {isEditing && (
-              <button
-                type="button"
-                onClick={() => setIsEditingPrice(!isEditingPrice)}
-                className="ml-2 text-sm text-blue-600 hover:text-blue-800"
-              >
-                {isEditingPrice ? '✗ Abbrechen' : '✏️ Preis ändern'}
-              </button>
-            )}
           </label>
-          {!isEditing || !isEditingPrice ? (
-            <input
-              type="number"
-              value={hourlyRate}
-              onChange={(e) => setHourlyRate(e.target.value)}
-              required
-              min="0.01"
-              step="0.01"
-              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="70.00"
-              readOnly={isEditing}
-            />
-          ) : (
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={newPrice}
-                  onChange={(e) => setNewPrice(e.target.value)}
-                  min="0.01"
-                  step="0.01"
-                  className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Neuer Preis"
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleAddPrice()}
-                  disabled={addPrice.isPending}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                >
-                  {addPrice.isPending ? 'Speichern...' : '✓ Speichern'}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500">
-                Der neue Preis gilt ab sofort. Der alte Preis bleibt in der Historie erhalten.
-              </p>
-            </div>
+          <input
+            type="number"
+            value={hourlyRate}
+            onChange={(e) => setHourlyRate(e.target.value)}
+            required
+            min="0.01"
+            step="0.01"
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="70.00"
+          />
+          {isEditing && originalHourlyRate !== hourlyRate && (
+            <p className="mt-1 text-sm text-blue-600">
+              ℹ️ Der Preis wird geändert. Der alte Preis bleibt in der Historie erhalten.
+            </p>
           )}
         </div>
 
@@ -238,15 +195,13 @@ export default function RoomForm() {
                           : '-'}
                       </td>
                       <td className="px-3 py-2 text-right">
-                        {price.validTo && (
-                          <button
-                            type="button"
-                            onClick={() => handleSelectHistoricalPrice(price.price)}
-                            className="text-blue-600 hover:text-blue-800 text-xs"
-                          >
-                            Als neuen Preis übernehmen
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectHistoricalPrice(price.price)}
+                          className="text-blue-600 hover:text-blue-800 text-xs"
+                        >
+                          Übernehmen
+                        </button>
                       </td>
                     </tr>
                   ))}

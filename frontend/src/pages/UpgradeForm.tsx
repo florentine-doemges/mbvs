@@ -20,13 +20,13 @@ export default function UpgradeForm() {
   const [price, setPrice] = useState('0')
   const [active, setActive] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isEditingPrice, setIsEditingPrice] = useState(false)
-  const [newPrice, setNewPrice] = useState('')
+  const [originalPrice, setOriginalPrice] = useState('0')
 
   useEffect(() => {
     if (upgrade) {
       setName(upgrade.name)
       setPrice(upgrade.price.toString())
+      setOriginalPrice(upgrade.price.toString())
       setActive(upgrade.active)
     }
   }, [upgrade])
@@ -48,6 +48,15 @@ export default function UpgradeForm() {
 
     try {
       if (isEditing && id) {
+        // Check if price changed
+        const priceChanged = originalPrice !== price
+
+        if (priceChanged) {
+          // Create new price entry (this automatically updates validTo on old price)
+          await addPriceMutation.mutateAsync(priceValue)
+        }
+
+        // Update upgrade details (name, active status)
         await updateUpgrade.mutateAsync({
           upgradeId: id,
           request: {
@@ -68,27 +77,8 @@ export default function UpgradeForm() {
     }
   }
 
-  const handleAddPrice = async () => {
-    setError(null)
-    const parsedPrice = parseFloat(newPrice)
-    if (isNaN(parsedPrice) || parsedPrice < 0) {
-      setError('Bitte geben Sie einen gültigen Preis ein')
-      return
-    }
-
-    try {
-      await addPriceMutation.mutateAsync(parsedPrice)
-      setNewPrice('')
-      setIsEditingPrice(false)
-      setPrice(parsedPrice.toString())
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler beim Hinzufügen des Preises')
-    }
-  }
-
   const handleSelectHistoricalPrice = (historicalPrice: number) => {
-    setNewPrice(historicalPrice.toString())
-    setIsEditingPrice(true)
+    setPrice(historicalPrice.toString())
   }
 
   if (isEditing && isLoading) {
@@ -130,58 +120,26 @@ export default function UpgradeForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Preis (EUR) *
-            {isEditing && (
-              <button
-                type="button"
-                onClick={() => setIsEditingPrice(!isEditingPrice)}
-                className="ml-2 text-sm text-blue-600 hover:text-blue-800"
-              >
-                {isEditingPrice ? '✗ Abbrechen' : '✏️ Preis ändern'}
-              </button>
-            )}
           </label>
-          {!isEditing || !isEditingPrice ? (
-            <>
-              <input
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-                min="0"
-                step="0.01"
-                className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="0.00"
-                readOnly={isEditing}
-              />
-              <p className="mt-1 text-sm text-gray-500">
-                Der Aufpreis für dieses Upgrade in Euro
-              </p>
-            </>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={newPrice}
-                  onChange={(e) => setNewPrice(e.target.value)}
-                  min="0"
-                  step="0.01"
-                  className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Neuer Preis"
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleAddPrice()}
-                  disabled={addPriceMutation.isPending}
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                >
-                  {addPriceMutation.isPending ? 'Speichern...' : '✓ Speichern'}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500">
-                Der neue Preis gilt ab sofort. Der alte Preis bleibt in der Historie erhalten.
-              </p>
-            </div>
+          <input
+            type="number"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+            min="0"
+            step="0.01"
+            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="0.00"
+          />
+          {isEditing && originalPrice !== price && (
+            <p className="mt-1 text-sm text-blue-600">
+              ℹ️ Der Preis wird geändert. Der alte Preis bleibt in der Historie erhalten.
+            </p>
+          )}
+          {!isEditing && (
+            <p className="mt-1 text-sm text-gray-500">
+              Der Aufpreis für dieses Upgrade in Euro
+            </p>
           )}
         </div>
 
@@ -228,15 +186,13 @@ export default function UpgradeForm() {
                           : '-'}
                       </td>
                       <td className="px-3 py-2 text-right">
-                        {priceItem.validTo && (
-                          <button
-                            type="button"
-                            onClick={() => handleSelectHistoricalPrice(priceItem.price)}
-                            className="text-blue-600 hover:text-blue-800 text-xs"
-                          >
-                            Als neuen Preis übernehmen
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleSelectHistoricalPrice(priceItem.price)}
+                          className="text-blue-600 hover:text-blue-800 text-xs"
+                        >
+                          Übernehmen
+                        </button>
                       </td>
                     </tr>
                   ))}
