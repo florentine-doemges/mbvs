@@ -56,6 +56,9 @@ class BillingServiceTest {
     @Mock
     private lateinit var upgradePriceRepository: UpgradePriceRepository
 
+    @Mock
+    private lateinit var priceCalculationService: PriceCalculationService
+
     private lateinit var billingService: BillingService
 
     private val location = Location(name = "Test Studio")
@@ -80,6 +83,7 @@ class BillingServiceTest {
                 serviceProviderRepository,
                 roomPriceRepository,
                 upgradePriceRepository,
+                priceCalculationService,
             )
 
         // Set up test data
@@ -141,6 +145,11 @@ class BillingServiceTest {
         whenever(bookingRepository.findAllById(bookingIds)).thenReturn(listOf(booking1, booking2))
         whenever(billingItemRepository.existsByBookingId(any())).thenReturn(false)
         whenever(roomPriceRepository.findByRoomIdAndValidAt(any(), any())).thenReturn(roomPrice)
+        whenever(priceCalculationService.calculateRoomPrice(any(), any())).thenAnswer { invocation ->
+            val duration = invocation.getArgument<Int>(1)
+            val hours = BigDecimal(duration).divide(BigDecimal(60), 4, java.math.RoundingMode.HALF_UP)
+            roomPrice.price.multiply(hours).setScale(2, java.math.RoundingMode.HALF_UP)
+        }
         whenever(billingRepository.save(any<Billing>())).thenAnswer { it.arguments[0] }
 
         val billings = billingService.createBillings(bookingIds, periodStart, periodEnd)
@@ -161,6 +170,11 @@ class BillingServiceTest {
         whenever(bookingRepository.findAllById(bookingIds)).thenReturn(listOf(booking1, booking2, booking3))
         whenever(billingItemRepository.existsByBookingId(any())).thenReturn(false)
         whenever(roomPriceRepository.findByRoomIdAndValidAt(any(), any())).thenReturn(roomPrice)
+        whenever(priceCalculationService.calculateRoomPrice(any(), any())).thenAnswer { invocation ->
+            val duration = invocation.getArgument<Int>(1)
+            val hours = BigDecimal(duration).divide(BigDecimal(60), 4, java.math.RoundingMode.HALF_UP)
+            roomPrice.price.multiply(hours).setScale(2, java.math.RoundingMode.HALF_UP)
+        }
         whenever(billingRepository.save(any<Billing>())).thenAnswer { it.arguments[0] }
 
         val billings = billingService.createBillings(bookingIds, periodStart, periodEnd)
@@ -231,6 +245,11 @@ class BillingServiceTest {
         whenever(bookingRepository.findAllById(bookingIds)).thenReturn(listOf(booking1))
         whenever(billingItemRepository.existsByBookingId(any())).thenReturn(false)
         whenever(roomPriceRepository.findByRoomIdAndValidAt(any(), any())).thenReturn(roomPrice)
+        whenever(priceCalculationService.calculateRoomPrice(any(), any())).thenAnswer { invocation ->
+            val duration = invocation.getArgument<Int>(1)
+            val hours = BigDecimal(duration).divide(BigDecimal(60), 4, java.math.RoundingMode.HALF_UP)
+            roomPrice.price.multiply(hours).setScale(2, java.math.RoundingMode.HALF_UP)
+        }
         whenever(billingRepository.save(any<Billing>())).thenAnswer { it.arguments[0] }
 
         val billings =
@@ -252,6 +271,11 @@ class BillingServiceTest {
         whenever(bookingRepository.findAllById(bookingIds)).thenReturn(listOf(booking1))
         whenever(billingItemRepository.existsByBookingId(any())).thenReturn(false)
         whenever(roomPriceRepository.findByRoomIdAndValidAt(any(), any())).thenReturn(roomPrice)
+        whenever(priceCalculationService.calculateRoomPrice(any(), any())).thenAnswer { invocation ->
+            val duration = invocation.getArgument<Int>(1)
+            val hours = BigDecimal(duration).divide(BigDecimal(60), 4, java.math.RoundingMode.HALF_UP)
+            roomPrice.price.multiply(hours).setScale(2, java.math.RoundingMode.HALF_UP)
+        }
         whenever(billingRepository.save(any<Billing>())).thenAnswer { it.arguments[0] }
 
         val billings =
@@ -280,6 +304,11 @@ class BillingServiceTest {
         whenever(bookingRepository.findAllById(bookingIds)).thenReturn(listOf(booking1))
         whenever(billingItemRepository.existsByBookingId(any())).thenReturn(false)
         whenever(roomPriceRepository.findByRoomIdAndValidAt(any(), any())).thenReturn(roomPrice)
+        whenever(priceCalculationService.calculateRoomPrice(any(), any())).thenAnswer { invocation ->
+            val duration = invocation.getArgument<Int>(1)
+            val hours = BigDecimal(duration).divide(BigDecimal(60), 4, java.math.RoundingMode.HALF_UP)
+            roomPrice.price.multiply(hours).setScale(2, java.math.RoundingMode.HALF_UP)
+        }
         whenever(upgradePriceRepository.findByUpgradeIdAndValidAt(any(), any())).thenReturn(upgradePrice)
         whenever(billingRepository.save(any<Billing>())).thenAnswer { it.arguments[0] }
 
@@ -332,6 +361,11 @@ class BillingServiceTest {
         whenever(bookingRepository.findAllById(bookingIds)).thenReturn(listOf(booking1))
         whenever(billingItemRepository.existsByBookingId(any())).thenReturn(false)
         whenever(roomPriceRepository.findByRoomIdAndValidAt(any(), any())).thenReturn(roomPrice)
+        whenever(priceCalculationService.calculateRoomPrice(any(), any())).thenAnswer { invocation ->
+            val duration = invocation.getArgument<Int>(1)
+            val hours = BigDecimal(duration).divide(BigDecimal(60), 4, java.math.RoundingMode.HALF_UP)
+            roomPrice.price.multiply(hours).setScale(2, java.math.RoundingMode.HALF_UP)
+        }
         whenever(upgradePriceRepository.findByUpgradeIdAndValidAt(any(), any())).thenReturn(null)
 
         val exception =
