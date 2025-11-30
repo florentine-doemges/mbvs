@@ -325,7 +325,11 @@ export function BookingTable({
                         booking.clientAlias || '-'
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 cursor-pointer hover:bg-gray-100 font-medium"
+                      onClick={() => !editing && onEdit(booking)}
+                      title="Klicken zum Bearbeiten (inkl. Upgrades)"
+                    >
                       {booking.totalPrice.toFixed(2)} €
                     </td>
                     <td className="px-4 py-3 text-right text-sm">
