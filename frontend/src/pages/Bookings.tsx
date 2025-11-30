@@ -4,7 +4,7 @@ import { format } from 'date-fns'
 import { useBookings, type BookingFilters } from '../hooks/useBookings'
 import { useRooms } from '../hooks/useRooms'
 import { useProviders } from '../hooks/useProviders'
-import { useDeleteBooking } from '../hooks/useCalendar'
+import { useDeleteBooking, useUpdateBooking } from '../hooks/useCalendar'
 import { BookingFilters as Filters } from '../components/BookingFilters'
 import { BookingTable } from '../components/BookingTable'
 import BookingModal from '../components/BookingModal'
@@ -38,6 +38,7 @@ export default function Bookings() {
   const { data: durationOptions = [] } = useDurationOptions(LOCATION_ID)
 
   const deleteMutation = useDeleteBooking(LOCATION_ID)
+  const updateMutation = useUpdateBooking(LOCATION_ID)
 
   const handleEdit = (booking: BookingListItem) => {
     setSelectedBooking(booking)
@@ -55,6 +56,19 @@ export default function Bookings() {
   const handleViewInCalendar = (booking: BookingListItem) => {
     const date = format(new Date(booking.startTime), 'yyyy-MM-dd')
     void navigate(`/calendar?date=${date}`)
+  }
+
+  const handleUpdate = async (bookingId: string, updates: Partial<BookingListItem>) => {
+    await updateMutation.mutateAsync({
+      id: bookingId,
+      request: {
+        providerId: updates.provider!.id,
+        roomId: updates.room!.id,
+        startTime: updates.startTime!,
+        durationMinutes: updates.durationMinutes!,
+        clientAlias: updates.clientAlias || '',
+      },
+    })
   }
 
   const handlePreviousPage = () => {
@@ -91,9 +105,13 @@ export default function Bookings() {
         <>
           <BookingTable
             bookings={bookingsData?.content}
+            providers={providers}
+            rooms={rooms}
+            durationOptions={durationOptions}
             onEdit={handleEdit}
             onDelete={(id) => void handleDelete(id)}
             onViewInCalendar={handleViewInCalendar}
+            onUpdate={(id, updates) => void handleUpdate(id, updates)}
           />
 
           {/* Pagination */}

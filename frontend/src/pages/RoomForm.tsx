@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { format } from 'date-fns'
+import { de } from 'date-fns/locale'
 import { useRoom, useCreateRoom, useUpdateRoom } from '../hooks/useRooms'
+import { useRoomPriceHistory, useAddRoomPrice } from '../hooks/usePrices'
 import { LOCATION_ID } from '../App'
 
 const DEFAULT_COLORS = [
@@ -22,6 +25,8 @@ export default function RoomForm() {
   const { data: room, isLoading } = useRoom(id || '')
   const createRoom = useCreateRoom(LOCATION_ID)
   const updateRoom = useUpdateRoom()
+  const { data: priceHistory } = useRoomPriceHistory(id || '')
+  const addPrice = useAddRoomPrice(id || '')
 
   const [name, setName] = useState('')
   const [hourlyRate, setHourlyRate] = useState('')
@@ -29,6 +34,8 @@ export default function RoomForm() {
   const [active, setActive] = useState(true)
   const [sortOrder, setSortOrder] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [isEditingPrice, setIsEditingPrice] = useState(false)
+  const [newPrice, setNewPrice] = useState('')
 
   useEffect(() => {
     if (room) {
@@ -75,6 +82,30 @@ export default function RoomForm() {
     }
   }
 
+  const handleAddPrice = async () => {
+    setError(null)
+    const price = parseFloat(newPrice)
+    if (isNaN(price) || price <= 0) {
+      setError('Bitte geben Sie einen gültigen Preis ein')
+      return
+    }
+
+    try {
+      await addPrice.mutateAsync(price)
+      setNewPrice('')
+      setIsEditingPrice(false)
+      // Update the hourlyRate field to show the new current price
+      setHourlyRate(price.toString())
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fehler beim Hinzufügen des Preises')
+    }
+  }
+
+  const handleSelectHistoricalPrice = (price: number) => {
+    setNewPrice(price.toString())
+    setIsEditingPrice(true)
+  }
+
   if (isEditing && isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -114,18 +145,116 @@ export default function RoomForm() {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Stundensatz (€) *
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => setIsEditingPrice(!isEditingPrice)}
+                className="ml-2 text-sm text-blue-600 hover:text-blue-800"
+              >
+                {isEditingPrice ? '✗ Abbrechen' : '✏️ Preis ändern'}
+              </button>
+            )}
           </label>
-          <input
-            type="number"
-            value={hourlyRate}
-            onChange={(e) => setHourlyRate(e.target.value)}
-            required
-            min="0.01"
-            step="0.01"
-            className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="70.00"
-          />
+          {!isEditing || !isEditingPrice ? (
+            <input
+              type="number"
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              required
+              min="0.01"
+              step="0.01"
+              className="w-full px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="70.00"
+              readOnly={isEditing}
+            />
+          ) : (
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={newPrice}
+                  onChange={(e) => setNewPrice(e.target.value)}
+                  min="0.01"
+                  step="0.01"
+                  className="flex-1 px-3 py-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Neuer Preis"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleAddPrice()}
+                  disabled={addPrice.isPending}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {addPrice.isPending ? 'Speichern...' : '✓ Speichern'}
+                </button>
+              </div>
+              <p className="text-xs text-gray-500">
+                Der neue Preis gilt ab sofort. Der alte Preis bleibt in der Historie erhalten.
+              </p>
+            </div>
+          )}
         </div>
+
+        {isEditing && priceHistory && priceHistory.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Preishistorie
+            </label>
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Preis
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Gültig von
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                      Gültig bis
+                    </th>
+                    <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                      Aktion
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {priceHistory.map((price) => (
+                    <tr key={price.id} className="hover:bg-gray-50">
+                      <td className="px-3 py-2 font-medium">
+                        {price.price.toFixed(2)} €
+                        {!price.validTo && (
+                          <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded">
+                            Aktuell
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2 text-gray-600">
+                        {format(new Date(price.validFrom), 'dd.MM.yyyy HH:mm', { locale: de })}
+                      </td>
+                      <td className="px-3 py-2 text-gray-600">
+                        {price.validTo
+                          ? format(new Date(price.validTo), 'dd.MM.yyyy HH:mm', { locale: de })
+                          : '-'}
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        {price.validTo && (
+                          <button
+                            type="button"
+                            onClick={() => handleSelectHistoricalPrice(price.price)}
+                            className="text-blue-600 hover:text-blue-800 text-xs"
+                          >
+                            Als neuen Preis übernehmen
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -214,3 +214,17 @@ export interface Location {
 export interface ErrorResponse {
   message: string
 }
+
+export interface RoomPrice {
+  id: string
+  price: number
+  validFrom: string
+  validTo: string | null
+}
+
+export interface UpgradePrice {
+  id: string
+  price: number
+  validFrom: string
+  validTo: string | null
+}

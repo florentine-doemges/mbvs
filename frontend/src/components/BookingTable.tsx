@@ -1,20 +1,41 @@
+import { useState } from 'react'
 import { format } from 'date-fns'
-import type { BookingListItem } from '../api/types'
+import type { BookingListItem, ProviderDetail, RoomDetail, DurationOption } from '../api/types'
 import { StatusBadge } from './StatusBadge'
 
 interface BookingTableProps {
   bookings?: BookingListItem[]
+  providers: ProviderDetail[]
+  rooms: RoomDetail[]
+  durationOptions: DurationOption[]
   onEdit: (booking: BookingListItem) => void
   onDelete: (bookingId: string) => void
   onViewInCalendar: (booking: BookingListItem) => void
+  onUpdate: (bookingId: string, updates: Partial<BookingListItem>) => Promise<void>
+}
+
+interface EditState {
+  bookingId: string
+  startTime: string
+  providerId: string
+  roomId: string
+  durationMinutes: number
+  clientAlias: string
 }
 
 export function BookingTable({
   bookings,
+  providers,
+  rooms,
+  durationOptions,
   onEdit,
   onDelete,
   onViewInCalendar,
+  onUpdate,
 }: BookingTableProps) {
+  const [editingBooking, setEditingBooking] = useState<EditState | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+
   if (!bookings || bookings.length === 0) {
     return (
       <div className="text-center py-12 bg-white rounded-lg shadow">
@@ -28,6 +49,43 @@ export function BookingTable({
       onDelete(bookingId)
     }
   }
+
+  const startEditing = (booking: BookingListItem) => {
+    setEditingBooking({
+      bookingId: booking.id,
+      startTime: booking.startTime,
+      providerId: booking.provider.id,
+      roomId: booking.room.id,
+      durationMinutes: booking.durationMinutes,
+      clientAlias: booking.clientAlias || '',
+    })
+  }
+
+  const cancelEditing = () => {
+    setEditingBooking(null)
+  }
+
+  const saveEditing = async () => {
+    if (!editingBooking) return
+
+    setIsSaving(true)
+    try {
+      await onUpdate(editingBooking.bookingId, {
+        startTime: editingBooking.startTime,
+        provider: providers.find((p) => p.id === editingBooking.providerId)!,
+        room: rooms.find((r) => r.id === editingBooking.roomId)!,
+        durationMinutes: editingBooking.durationMinutes,
+        clientAlias: editingBooking.clientAlias,
+      } as Partial<BookingListItem>)
+      setEditingBooking(null)
+    } catch (error) {
+      alert('Fehler beim Speichern: ' + (error as Error).message)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const isEditing = (bookingId: string) => editingBooking?.bookingId === bookingId
 
   return (
     <>
@@ -124,64 +182,183 @@ export function BookingTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {bookings.map((booking) => (
-                <tr key={booking.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <StatusBadge status={booking.status} />
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    {format(new Date(booking.startTime), 'dd.MM.yyyy HH:mm')}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="inline-block px-2 py-1 rounded text-white text-sm"
-                      style={{ backgroundColor: booking.provider.color }}
-                    >
-                      {booking.provider.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="inline-block px-2 py-1 rounded text-white text-sm"
-                      style={{ backgroundColor: booking.room.color }}
-                    >
-                      {booking.room.name}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    {booking.durationMinutes} min
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    {booking.clientAlias || '-'}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    {booking.totalPrice.toFixed(2)} €
-                  </td>
-                  <td className="px-4 py-3 text-right text-sm">
-                    <button
-                      onClick={() => onViewInCalendar(booking)}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                      title="Im Kalender anzeigen"
-                    >
-                      📅
-                    </button>
-                    <button
-                      onClick={() => onEdit(booking)}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                      title="Bearbeiten"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(booking.id)}
-                      className="text-red-600 hover:text-red-800"
-                      title="Löschen"
-                    >
-                      🗑️
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {bookings.map((booking) => {
+                const editing = isEditing(booking.id)
+                return (
+                  <tr key={booking.id} className={editing ? 'bg-blue-50' : 'hover:bg-gray-50'}>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={booking.status} />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {editing ? (
+                        <input
+                          type="datetime-local"
+                          value={editingBooking!.startTime.slice(0, 16)}
+                          onChange={(e) =>
+                            setEditingBooking({
+                              ...editingBooking!,
+                              startTime: e.target.value + ':00',
+                            })
+                          }
+                          className="px-2 py-1 border rounded text-sm w-full"
+                        />
+                      ) : (
+                        format(new Date(booking.startTime), 'dd.MM.yyyy HH:mm')
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {editing ? (
+                        <select
+                          value={editingBooking!.providerId}
+                          onChange={(e) =>
+                            setEditingBooking({
+                              ...editingBooking!,
+                              providerId: e.target.value,
+                            })
+                          }
+                          className="px-2 py-1 border rounded text-sm w-full"
+                        >
+                          {providers.map((provider) => (
+                            <option key={provider.id} value={provider.id}>
+                              {provider.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span
+                          className="inline-block px-2 py-1 rounded text-white text-sm"
+                          style={{ backgroundColor: booking.provider.color }}
+                        >
+                          {booking.provider.name}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {editing ? (
+                        <select
+                          value={editingBooking!.roomId}
+                          onChange={(e) =>
+                            setEditingBooking({
+                              ...editingBooking!,
+                              roomId: e.target.value,
+                            })
+                          }
+                          className="px-2 py-1 border rounded text-sm w-full"
+                        >
+                          {rooms.map((room) => (
+                            <option key={room.id} value={room.id}>
+                              {room.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span
+                          className="inline-block px-2 py-1 rounded text-white text-sm"
+                          style={{ backgroundColor: booking.room.color }}
+                        >
+                          {booking.room.name}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {editing ? (
+                        <select
+                          value={editingBooking!.durationMinutes}
+                          onChange={(e) =>
+                            setEditingBooking({
+                              ...editingBooking!,
+                              durationMinutes: parseInt(e.target.value),
+                            })
+                          }
+                          className="px-2 py-1 border rounded text-sm w-full"
+                        >
+                          {durationOptions.map((option) => (
+                            <option key={option.id} value={option.minutes}>
+                              {option.minutes} min
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        `${booking.durationMinutes} min`
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {editing ? (
+                        <input
+                          type="text"
+                          value={editingBooking!.clientAlias}
+                          onChange={(e) =>
+                            setEditingBooking({
+                              ...editingBooking!,
+                              clientAlias: e.target.value,
+                            })
+                          }
+                          placeholder="Kundenname"
+                          className="px-2 py-1 border rounded text-sm w-full"
+                        />
+                      ) : (
+                        booking.clientAlias || '-'
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {booking.totalPrice.toFixed(2)} €
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm">
+                      {editing ? (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => void saveEditing()}
+                            disabled={isSaving}
+                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                            title="Speichern"
+                          >
+                            {isSaving ? '...' : '✓'}
+                          </button>
+                          <button
+                            onClick={cancelEditing}
+                            disabled={isSaving}
+                            className="px-3 py-1 bg-gray-600 text-white rounded hover:bg-gray-700 disabled:opacity-50"
+                            title="Abbrechen"
+                          >
+                            ✗
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => onViewInCalendar(booking)}
+                            className="text-blue-600 hover:text-blue-800 mr-3"
+                            title="Im Kalender anzeigen"
+                          >
+                            📅
+                          </button>
+                          <button
+                            onClick={() => startEditing(booking)}
+                            className="text-blue-600 hover:text-blue-800 mr-3"
+                            title="Inline bearbeiten"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => onEdit(booking)}
+                            className="text-purple-600 hover:text-purple-800 mr-3"
+                            title="Im Modal bearbeiten"
+                          >
+                            📝
+                          </button>
+                          <button
+                            onClick={() => handleDelete(booking.id)}
+                            className="text-red-600 hover:text-red-800"
+                            title="Löschen"
+                          >
+                            🗑️
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

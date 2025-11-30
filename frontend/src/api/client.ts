@@ -18,6 +18,8 @@ import type {
   UpdateRoomRequest,
   UpdateUpgradeRequest,
   Upgrade,
+  RoomPrice,
+  UpgradePrice,
 } from './types'
 
 const API_BASE = '/api'
@@ -282,4 +284,50 @@ export async function deleteBooking(bookingId: string): Promise<void> {
     const error = (await response.json()) as ErrorResponse
     throw new Error(error.message)
   }
+}
+
+// Room Prices
+export async function fetchRoomPriceHistory(roomId: string): Promise<RoomPrice[]> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices`)
+  return handleResponse<RoomPrice[]>(response)
+}
+
+export async function fetchCurrentRoomPrice(roomId: string): Promise<RoomPrice | null> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/current`)
+  if (response.status === 404) {
+    return null
+  }
+  return handleResponse<RoomPrice>(response)
+}
+
+export async function addRoomPrice(roomId: string, price: number): Promise<RoomPrice> {
+  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ price }),
+  })
+  return handleResponse<RoomPrice>(response)
+}
+
+// Upgrade Prices
+export async function fetchUpgradePriceHistory(upgradeId: string): Promise<UpgradePrice[]> {
+  const response = await fetch(`${API_BASE}/upgrades/${upgradeId}/prices`)
+  return handleResponse<UpgradePrice[]>(response)
+}
+
+export async function fetchCurrentUpgradePrice(upgradeId: string): Promise<UpgradePrice | null> {
+  const response = await fetch(`${API_BASE}/upgrades/${upgradeId}/prices/current`)
+  if (response.status === 404) {
+    return null
+  }
+  return handleResponse<UpgradePrice>(response)
+}
+
+export async function addUpgradePrice(upgradeId: string, price: number): Promise<UpgradePrice> {
+  const response = await fetch(`${API_BASE}/upgrades/${upgradeId}/prices`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ price }),
+  })
+  return handleResponse<UpgradePrice>(response)
 }
