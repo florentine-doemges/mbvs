@@ -58,7 +58,7 @@ export default function Bookings() {
     void navigate(`/calendar?date=${date}`)
   }
 
-  const handleUpdate = async (bookingId: string, updates: Partial<BookingListItem>) => {
+  const handleUpdate = async (bookingId: string, updates: Partial<BookingListItem>): Promise<void> => {
     await updateMutation.mutateAsync({
       id: bookingId,
       request: {
@@ -111,7 +111,7 @@ export default function Bookings() {
             onEdit={handleEdit}
             onDelete={(id) => void handleDelete(id)}
             onViewInCalendar={handleViewInCalendar}
-            onUpdate={(id, updates) => void handleUpdate(id, updates)}
+            onUpdate={handleUpdate}
           />
 
           {/* Pagination */}
