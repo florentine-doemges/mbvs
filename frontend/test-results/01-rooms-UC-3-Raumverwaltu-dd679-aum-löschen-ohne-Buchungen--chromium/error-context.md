@@ -1,0 +1,95 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Studio Mabella" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Buchungssystem
+      - navigation [ref=e9]:
+        - link "📅 Kalender" [ref=e10] [cursor=pointer]:
+          - /url: /calendar
+          - generic [ref=e11]: 📅
+          - text: Kalender
+        - link "📋 Buchungen" [ref=e12] [cursor=pointer]:
+          - /url: /bookings
+          - generic [ref=e13]: 📋
+          - text: Buchungen
+        - link "🚪 Räume" [ref=e14] [cursor=pointer]:
+          - /url: /rooms
+          - generic [ref=e15]: 🚪
+          - text: Räume
+        - link "👤 Provider" [ref=e16] [cursor=pointer]:
+          - /url: /providers
+          - generic [ref=e17]: 👤
+          - text: Provider
+        - link "✨ Upgrades" [ref=e18] [cursor=pointer]:
+          - /url: /upgrades
+          - generic [ref=e19]: ✨
+          - text: Upgrades
+        - link "⚙️ Einstellungen" [ref=e20] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e21]: ⚙️
+          - text: Einstellungen
+      - generic [ref=e22]: Version 1.0 - Slice 2
+  - main [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Räume" [level=2] [ref=e27]
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - checkbox "Inaktive anzeigen" [ref=e30]
+            - text: Inaktive anzeigen
+          - link "Neuer Raum" [ref=e31] [cursor=pointer]:
+            - /url: /rooms/new
+      - table [ref=e33]:
+        - rowgroup [ref=e34]:
+          - row "Name Farbe Stundensatz Status Buchungen Aktionen" [ref=e35]:
+            - columnheader "Name" [ref=e36]
+            - columnheader "Farbe" [ref=e37]
+            - columnheader "Stundensatz" [ref=e38]
+            - columnheader "Status" [ref=e39]
+            - columnheader "Buchungen" [ref=e40]
+            - columnheader "Aktionen" [ref=e41]
+        - rowgroup [ref=e42]:
+          - 'row "Blau #3B82F6 70.00 € Aktiv 0 Bearbeiten Löschen" [ref=e43]':
+            - cell "Blau" [ref=e44]
+            - cell "#3B82F6" [ref=e45]:
+              - generic [ref=e48]: "#3B82F6"
+            - cell "70.00 €" [ref=e49] [cursor=pointer]
+            - cell "Aktiv" [ref=e50]:
+              - generic [ref=e51]: Aktiv
+            - cell "0" [ref=e52]
+            - cell "Bearbeiten Löschen" [ref=e53]:
+              - generic [ref=e54]:
+                - link "Bearbeiten" [ref=e55] [cursor=pointer]:
+                  - /url: /rooms/33333333-3333-3333-3333-333333333302
+                - button "Löschen" [ref=e56] [cursor=pointer]
+          - 'row "Grün #10B981 70.00 € Aktiv 0 Bearbeiten Löschen" [ref=e57]':
+            - cell "Grün" [ref=e58]
+            - cell "#10B981" [ref=e59]:
+              - generic [ref=e62]: "#10B981"
+            - cell "70.00 €" [ref=e63] [cursor=pointer]
+            - cell "Aktiv" [ref=e64]:
+              - generic [ref=e65]: Aktiv
+            - cell "0" [ref=e66]
+            - cell "Bearbeiten Löschen" [ref=e67]:
+              - generic [ref=e68]:
+                - link "Bearbeiten" [ref=e69] [cursor=pointer]:
+                  - /url: /rooms/33333333-3333-3333-3333-333333333303
+                - button "Löschen" [ref=e70] [cursor=pointer]
+          - 'row "E2E Test Roter Raum #EF4444 70.00 € Aktiv 0 Bearbeiten Löschen" [ref=e71]':
+            - cell "E2E Test Roter Raum" [ref=e72]
+            - cell "#EF4444" [ref=e73]:
+              - generic [ref=e76]: "#EF4444"
+            - cell "70.00 €" [ref=e77] [cursor=pointer]
+            - cell "Aktiv" [ref=e78]:
+              - generic [ref=e79]: Aktiv
+            - cell "0" [ref=e80]
+            - cell "Bearbeiten Löschen" [ref=e81]:
+              - generic [ref=e82]:
+                - link "Bearbeiten" [ref=e83] [cursor=pointer]:
+                  - /url: /rooms/0de686a4-3355-4f9a-9963-903ec3497150
+                - button "Löschen" [ref=e84] [cursor=pointer]
+```

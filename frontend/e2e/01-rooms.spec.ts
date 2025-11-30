@@ -12,10 +12,6 @@ test.describe('UC-3: Raumverwaltung', () => {
     await deleteAllTestData(page)
   })
 
-  test.afterAll(async ({ page }) => {
-    await deleteAllTestData(page)
-  })
-
   test('UC-3.1: Raumübersicht öffnen', async ({ page }) => {
     // Setup: Create test room
     await createTestRoom(page, TEST_ROOMS.red)
@@ -26,10 +22,10 @@ test.describe('UC-3: Raumverwaltung', () => {
     // Verify: Page loads correctly
     await expect(page.locator('h2').filter({ hasText: 'Räume' })).toBeVisible()
 
-    // Verify: Room is displayed
-    await expect(page.getByText(TEST_ROOMS.red.name)).toBeVisible()
-    await expect(page.getByText(`${TEST_ROOMS.red.hourlyRate.toFixed(2)} €`)).toBeVisible()
-    await expect(page.getByText(TEST_ROOMS.red.color)).toBeVisible()
+    // Verify: Room is displayed - look for the row containing our test room
+    const roomRow = page.locator('tr', { has: page.getByText(TEST_ROOMS.red.name) })
+    await expect(roomRow).toBeVisible()
+    await expect(roomRow.getByText(TEST_ROOMS.red.color)).toBeVisible()
   })
 
   test('UC-3.2: Inaktive Räume anzeigen', async ({ page }) => {

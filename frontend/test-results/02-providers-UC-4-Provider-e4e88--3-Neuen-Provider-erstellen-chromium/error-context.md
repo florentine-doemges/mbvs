@@ -1,0 +1,60 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Studio Mabella" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Buchungssystem
+      - navigation [ref=e9]:
+        - link "📅 Kalender" [ref=e10] [cursor=pointer]:
+          - /url: /calendar
+          - generic [ref=e11]: 📅
+          - text: Kalender
+        - link "📋 Buchungen" [ref=e12] [cursor=pointer]:
+          - /url: /bookings
+          - generic [ref=e13]: 📋
+          - text: Buchungen
+        - link "🚪 Räume" [ref=e14] [cursor=pointer]:
+          - /url: /rooms
+          - generic [ref=e15]: 🚪
+          - text: Räume
+        - link "👤 Provider" [ref=e16] [cursor=pointer]:
+          - /url: /providers
+          - generic [ref=e17]: 👤
+          - text: Provider
+        - link "✨ Upgrades" [ref=e18] [cursor=pointer]:
+          - /url: /upgrades
+          - generic [ref=e19]: ✨
+          - text: Upgrades
+        - link "⚙️ Einstellungen" [ref=e20] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e21]: ⚙️
+          - text: Einstellungen
+      - generic [ref=e22]: Version 1.0 - Slice 2
+  - main [ref=e24]:
+    - generic [ref=e25]:
+      - heading "Neuer Provider" [level=2] [ref=e27]
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]: Name *
+          - textbox "z.B. Lady Lexi, Mistress Bella..." [ref=e31]
+        - generic [ref=e32]:
+          - generic [ref=e33]: Farbe
+          - generic [ref=e34]:
+            - generic [ref=e35]:
+              - button [ref=e36] [cursor=pointer]
+              - button [ref=e37] [cursor=pointer]
+              - button [ref=e38] [cursor=pointer]
+              - button [ref=e39] [cursor=pointer]
+              - button [ref=e40] [cursor=pointer]
+              - button [ref=e41] [cursor=pointer]
+              - button [ref=e42] [cursor=pointer]
+              - button [ref=e43] [cursor=pointer]
+            - textbox [ref=e44] [cursor=pointer]: "#10b981"
+            - generic [ref=e45]: "#10B981"
+        - generic [ref=e46]:
+          - button "Abbrechen" [ref=e47] [cursor=pointer]
+          - button "Speichern" [ref=e48] [cursor=pointer]
+```

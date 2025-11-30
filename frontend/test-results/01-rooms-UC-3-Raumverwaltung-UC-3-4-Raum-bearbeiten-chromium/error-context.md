@@ -1,0 +1,88 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Studio Mabella" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Buchungssystem
+      - navigation [ref=e9]:
+        - link "📅 Kalender" [ref=e10] [cursor=pointer]:
+          - /url: /calendar
+          - generic [ref=e11]: 📅
+          - text: Kalender
+        - link "📋 Buchungen" [ref=e12] [cursor=pointer]:
+          - /url: /bookings
+          - generic [ref=e13]: 📋
+          - text: Buchungen
+        - link "🚪 Räume" [ref=e14] [cursor=pointer]:
+          - /url: /rooms
+          - generic [ref=e15]: 🚪
+          - text: Räume
+        - link "👤 Provider" [ref=e16] [cursor=pointer]:
+          - /url: /providers
+          - generic [ref=e17]: 👤
+          - text: Provider
+        - link "✨ Upgrades" [ref=e18] [cursor=pointer]:
+          - /url: /upgrades
+          - generic [ref=e19]: ✨
+          - text: Upgrades
+        - link "⚙️ Einstellungen" [ref=e20] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e21]: ⚙️
+          - text: Einstellungen
+      - generic [ref=e22]: Version 1.0 - Slice 2
+  - main [ref=e24]:
+    - generic [ref=e25]:
+      - heading "Raum bearbeiten" [level=2] [ref=e27]
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e30]: Name *
+          - textbox "z.B. Rot, Blau, Klinik..." [ref=e31]: Rot
+        - generic [ref=e32]:
+          - generic [ref=e33]: Stundensatz (€) *
+          - spinbutton [ref=e34]: "70"
+        - generic [ref=e35]:
+          - generic [ref=e36]: Preishistorie
+          - table [ref=e38]:
+            - rowgroup [ref=e39]:
+              - row "Preis Gültig von Gültig bis Aktion" [ref=e40]:
+                - columnheader "Preis" [ref=e41]
+                - columnheader "Gültig von" [ref=e42]
+                - columnheader "Gültig bis" [ref=e43]
+                - columnheader "Aktion" [ref=e44]
+            - rowgroup [ref=e45]:
+              - row "70.00 €Aktuell 30.11.2025 03:55 - Übernehmen" [ref=e46]:
+                - cell "70.00 €Aktuell" [ref=e47]
+                - cell "30.11.2025 03:55" [ref=e48]
+                - cell "-" [ref=e49]
+                - cell "Übernehmen" [ref=e50]:
+                  - button "Übernehmen" [ref=e51] [cursor=pointer]
+        - generic [ref=e52]:
+          - generic [ref=e53]: Farbe
+          - generic [ref=e54]:
+            - generic [ref=e55]:
+              - button [ref=e56] [cursor=pointer]
+              - button [ref=e57] [cursor=pointer]
+              - button [ref=e58] [cursor=pointer]
+              - button [ref=e59] [cursor=pointer]
+              - button [ref=e60] [cursor=pointer]
+              - button [ref=e61] [cursor=pointer]
+              - button [ref=e62] [cursor=pointer]
+              - button [ref=e63] [cursor=pointer]
+            - textbox [ref=e64] [cursor=pointer]: "#ef4444"
+            - generic [ref=e65]: "#EF4444"
+        - generic [ref=e66]:
+          - generic [ref=e67]: Sortierung
+          - spinbutton [ref=e68]: "1"
+          - paragraph [ref=e69]: Niedrigere Werte erscheinen zuerst im Kalender
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - checkbox "Aktiv" [checked] [ref=e72]
+            - generic [ref=e73]: Aktiv
+          - paragraph [ref=e74]: Inaktive Räume können nicht mehr gebucht werden
+        - generic [ref=e75]:
+          - button "Abbrechen" [ref=e76] [cursor=pointer]
+          - button "Speichern" [ref=e77] [cursor=pointer]
+```

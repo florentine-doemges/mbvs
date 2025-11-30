@@ -1,0 +1,91 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Studio Mabella" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Buchungssystem
+      - navigation [ref=e9]:
+        - link "📅 Kalender" [ref=e10] [cursor=pointer]:
+          - /url: /calendar
+          - generic [ref=e11]: 📅
+          - text: Kalender
+        - link "📋 Buchungen" [ref=e12] [cursor=pointer]:
+          - /url: /bookings
+          - generic [ref=e13]: 📋
+          - text: Buchungen
+        - link "🚪 Räume" [ref=e14] [cursor=pointer]:
+          - /url: /rooms
+          - generic [ref=e15]: 🚪
+          - text: Räume
+        - link "👤 Provider" [ref=e16] [cursor=pointer]:
+          - /url: /providers
+          - generic [ref=e17]: 👤
+          - text: Provider
+        - link "✨ Upgrades" [ref=e18] [cursor=pointer]:
+          - /url: /upgrades
+          - generic [ref=e19]: ✨
+          - text: Upgrades
+        - link "⚙️ Einstellungen" [ref=e20] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e21]: ⚙️
+          - text: Einstellungen
+      - generic [ref=e22]: Version 1.0 - Slice 2
+  - main [ref=e24]:
+    - generic [ref=e26]:
+      - generic [ref=e27]:
+        - heading "Buchungsdauern" [level=2] [ref=e28]
+        - button "Neue Dauer" [active] [ref=e29] [cursor=pointer]
+      - generic [ref=e30]:
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - checkbox [checked] [ref=e34]
+            - generic [ref=e35]:
+              - generic [ref=e36]: 1 Stunde
+              - generic [ref=e37]: 60 Minuten
+          - generic [ref=e38]:
+            - button "Bearbeiten" [ref=e39] [cursor=pointer]
+            - button "Löschen" [ref=e40] [cursor=pointer]
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - checkbox [checked] [ref=e44]
+            - generic [ref=e45]:
+              - generic [ref=e46]: 1,5 Stunden
+              - generic [ref=e47]: 90 Minuten
+          - generic [ref=e48]:
+            - button "Bearbeiten" [ref=e49] [cursor=pointer]
+            - button "Löschen" [ref=e50] [cursor=pointer]
+        - generic [ref=e52]:
+          - generic [ref=e53]:
+            - checkbox [checked] [ref=e54]
+            - generic [ref=e55]:
+              - generic [ref=e56]: 2 Stunden
+              - generic [ref=e57]: 120 Minuten
+          - generic [ref=e58]:
+            - button "Bearbeiten" [ref=e59] [cursor=pointer]
+            - button "Löschen" [ref=e60] [cursor=pointer]
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - checkbox [checked] [ref=e64]
+            - generic [ref=e65]:
+              - generic [ref=e66]: Variable Dauer
+              - generic [ref=e67]: 30-480 Min (30er Schritte)
+          - generic [ref=e68]:
+            - button "Bearbeiten" [ref=e69] [cursor=pointer]
+            - button "Löschen" [ref=e70] [cursor=pointer]
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - generic [ref=e74]: Bezeichnung *
+            - textbox "z.B. 1 Stunde, Variable..." [ref=e75]
+          - generic [ref=e77]:
+            - checkbox "Variable Dauer" [ref=e78]
+            - generic [ref=e79]: Variable Dauer
+          - generic [ref=e80]:
+            - generic [ref=e81]: Dauer (Minuten) *
+            - spinbutton [ref=e82]: "60"
+          - generic [ref=e83]:
+            - button "Abbrechen" [ref=e84] [cursor=pointer]
+            - button "Speichern" [ref=e85] [cursor=pointer]
+```

@@ -2,6 +2,8 @@ import { Page, expect } from '@playwright/test'
 
 // Test data constants
 export const LOCATION_ID = '11111111-1111-1111-1111-111111111111'
+export const API_BASE = 'http://127.0.0.1:8080/api'
+export const APP_BASE = process.env.BASE_URL || 'http://localhost:3001'
 
 export const TEST_ROOMS = {
   red: {
@@ -60,7 +62,9 @@ export const TEST_DURATIONS = {
 
 // Helper functions
 export async function navigateTo(page: Page, path: string) {
-  await page.goto(path)
+  // Build full URL if path is relative
+  const url = path.startsWith('http') ? path : `${APP_BASE}${path}`
+  await page.goto(url)
   await page.waitForLoadState('networkidle')
 }
 
@@ -77,70 +81,70 @@ export async function waitForApiResponse(page: Page, urlPattern: string | RegExp
 export async function deleteAllTestData(page: Page) {
   // Delete test bookings first (due to foreign keys)
   const bookingsResponse = await page.request.get(
-    `/api/locations/${LOCATION_ID}/bookings?limit=1000`
+    `${API_BASE}/locations/${LOCATION_ID}/bookings?limit=1000`
   )
   if (bookingsResponse.ok()) {
     const data = await bookingsResponse.json()
-    for (const booking of data.items) {
+    for (const booking of data.content || []) {
       if (booking.clientAlias?.startsWith('E2E Test')) {
-        await page.request.delete(`/api/bookings/${booking.id}`)
+        await page.request.delete(`${API_BASE}/bookings/${booking.id}`)
       }
     }
   }
 
   // Delete test rooms
   const roomsResponse = await page.request.get(
-    `/api/locations/${LOCATION_ID}/rooms?includeInactive=true`
+    `${API_BASE}/locations/${LOCATION_ID}/rooms?includeInactive=true`
   )
   if (roomsResponse.ok()) {
     const rooms = await roomsResponse.json()
     for (const room of rooms) {
       if (room.name.startsWith('E2E Test')) {
-        await page.request.delete(`/api/rooms/${room.id}`)
+        await page.request.delete(`${API_BASE}/rooms/${room.id}`)
       }
     }
   }
 
   // Delete test providers
   const providersResponse = await page.request.get(
-    `/api/locations/${LOCATION_ID}/providers?includeInactive=true`
+    `${API_BASE}/locations/${LOCATION_ID}/providers?includeInactive=true`
   )
   if (providersResponse.ok()) {
     const providers = await providersResponse.json()
     for (const provider of providers) {
       if (provider.name.startsWith('E2E Test')) {
-        await page.request.delete(`/api/providers/${provider.id}`)
+        await page.request.delete(`${API_BASE}/providers/${provider.id}`)
       }
     }
   }
 
   // Delete test upgrades
-  const upgradesResponse = await page.request.get(`/api/upgrades?includeInactive=true`)
+  const upgradesResponse = await page.request.get(`${API_BASE}/upgrades?includeInactive=true`)
   if (upgradesResponse.ok()) {
     const upgrades = await upgradesResponse.json()
     for (const upgrade of upgrades) {
       if (upgrade.name.startsWith('E2E Test')) {
-        await page.request.delete(`/api/upgrades/${upgrade.id}`)
+        await page.request.delete(`${API_BASE}/upgrades/${upgrade.id}`)
       }
     }
   }
 
   // Delete test duration options
   const durationsResponse = await page.request.get(
-    `/api/locations/${LOCATION_ID}/duration-options?includeInactive=true`
+    `${API_BASE}/locations/${LOCATION_ID}/duration-options?includeInactive=true`
   )
   if (durationsResponse.ok()) {
     const durations = await durationsResponse.json()
     for (const duration of durations) {
       if (duration.label.startsWith('E2E Test')) {
-        await page.request.delete(`/api/duration-options/${duration.id}`)
+        await page.request.delete(`${API_BASE}/duration-options/${duration.id}`)
       }
     }
   }
 }
 
 export async function createTestRoom(page: Page, roomData: typeof TEST_ROOMS.red) {
-  const response = await page.request.post(`/api/locations/${LOCATION_ID}/rooms`, {
+  const response = await page.request.post(`${API_BASE}/locations/${LOCATION_ID}/rooms`, {
     data: roomData
   })
   expect(response.ok()).toBeTruthy()
@@ -148,7 +152,7 @@ export async function createTestRoom(page: Page, roomData: typeof TEST_ROOMS.red
 }
 
 export async function createTestProvider(page: Page, providerData: typeof TEST_PROVIDERS.anna) {
-  const response = await page.request.post(`/api/locations/${LOCATION_ID}/providers`, {
+  const response = await page.request.post(`${API_BASE}/locations/${LOCATION_ID}/providers`, {
     data: providerData
   })
   expect(response.ok()).toBeTruthy()
@@ -156,7 +160,7 @@ export async function createTestProvider(page: Page, providerData: typeof TEST_P
 }
 
 export async function createTestUpgrade(page: Page, upgradeData: typeof TEST_UPGRADES.champagne) {
-  const response = await page.request.post(`/api/upgrades`, {
+  const response = await page.request.post(`${API_BASE}/upgrades`, {
     data: upgradeData
   })
   expect(response.ok()).toBeTruthy()
@@ -168,7 +172,7 @@ export async function createTestDuration(
   durationData: typeof TEST_DURATIONS.oneHour | typeof TEST_DURATIONS.flexible
 ) {
   const response = await page.request.post(
-    `/api/locations/${LOCATION_ID}/duration-options`,
+    `${API_BASE}/locations/${LOCATION_ID}/duration-options`,
     {
       data: durationData
     }
@@ -188,7 +192,7 @@ export async function createTestBooking(
     upgrades?: Array<{ upgradeId: string; quantity: number }>
   }
 ) {
-  const response = await page.request.post(`/api/bookings`, {
+  const response = await page.request.post(`${API_BASE}/bookings`, {
     data: bookingData
   })
   expect(response.ok()).toBeTruthy()

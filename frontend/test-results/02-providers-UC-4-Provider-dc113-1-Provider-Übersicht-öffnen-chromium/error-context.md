@@ -1,0 +1,103 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "Studio Mabella" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Buchungssystem
+      - navigation [ref=e9]:
+        - link "📅 Kalender" [ref=e10] [cursor=pointer]:
+          - /url: /calendar
+          - generic [ref=e11]: 📅
+          - text: Kalender
+        - link "📋 Buchungen" [ref=e12] [cursor=pointer]:
+          - /url: /bookings
+          - generic [ref=e13]: 📋
+          - text: Buchungen
+        - link "🚪 Räume" [ref=e14] [cursor=pointer]:
+          - /url: /rooms
+          - generic [ref=e15]: 🚪
+          - text: Räume
+        - link "👤 Provider" [ref=e16] [cursor=pointer]:
+          - /url: /providers
+          - generic [ref=e17]: 👤
+          - text: Provider
+        - link "✨ Upgrades" [ref=e18] [cursor=pointer]:
+          - /url: /upgrades
+          - generic [ref=e19]: ✨
+          - text: Upgrades
+        - link "⚙️ Einstellungen" [ref=e20] [cursor=pointer]:
+          - /url: /settings
+          - generic [ref=e21]: ⚙️
+          - text: Einstellungen
+      - generic [ref=e22]: Version 1.0 - Slice 2
+  - main [ref=e24]:
+    - generic [ref=e25]:
+      - generic [ref=e26]:
+        - heading "Provider" [level=2] [ref=e27]
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - checkbox "Inaktive anzeigen" [ref=e30]
+            - text: Inaktive anzeigen
+          - link "Neuer Provider" [ref=e31] [cursor=pointer]:
+            - /url: /providers/new
+      - table [ref=e33]:
+        - rowgroup [ref=e34]:
+          - row "Name Farbe Status Buchungen Aktionen" [ref=e35]:
+            - columnheader "Name" [ref=e36]
+            - columnheader "Farbe" [ref=e37]
+            - columnheader "Status" [ref=e38]
+            - columnheader "Buchungen" [ref=e39]
+            - columnheader "Aktionen" [ref=e40]
+        - rowgroup [ref=e41]:
+          - 'row "Lady Lexi #EC4899 Aktiv 0 Bearbeiten Löschen" [ref=e42]':
+            - cell "Lady Lexi" [ref=e43]
+            - cell "#EC4899" [ref=e44]:
+              - generic [ref=e47]: "#EC4899"
+            - cell "Aktiv" [ref=e48]:
+              - generic [ref=e49]: Aktiv
+            - cell "0" [ref=e50]
+            - cell "Bearbeiten Löschen" [ref=e51]:
+              - generic [ref=e52]:
+                - link "Bearbeiten" [ref=e53] [cursor=pointer]:
+                  - /url: /providers/22222222-2222-2222-2222-222222222201
+                - button "Löschen" [ref=e54] [cursor=pointer]
+          - 'row "Domina Sarah #8B5CF6 Aktiv 0 Bearbeiten Löschen" [ref=e55]':
+            - cell "Domina Sarah" [ref=e56]
+            - cell "#8B5CF6" [ref=e57]:
+              - generic [ref=e60]: "#8B5CF6"
+            - cell "Aktiv" [ref=e61]:
+              - generic [ref=e62]: Aktiv
+            - cell "0" [ref=e63]
+            - cell "Bearbeiten Löschen" [ref=e64]:
+              - generic [ref=e65]:
+                - link "Bearbeiten" [ref=e66] [cursor=pointer]:
+                  - /url: /providers/22222222-2222-2222-2222-222222222202
+                - button "Löschen" [ref=e67] [cursor=pointer]
+          - 'row "Mistress Anna #F59E0B Aktiv 0 Bearbeiten Löschen" [ref=e68]':
+            - cell "Mistress Anna" [ref=e69]
+            - cell "#F59E0B" [ref=e70]:
+              - generic [ref=e73]: "#F59E0B"
+            - cell "Aktiv" [ref=e74]:
+              - generic [ref=e75]: Aktiv
+            - cell "0" [ref=e76]
+            - cell "Bearbeiten Löschen" [ref=e77]:
+              - generic [ref=e78]:
+                - link "Bearbeiten" [ref=e79] [cursor=pointer]:
+                  - /url: /providers/22222222-2222-2222-2222-222222222203
+                - button "Löschen" [ref=e80] [cursor=pointer]
+          - 'row "E2E Test Anna Schmidt #EC4899 Aktiv 0 Bearbeiten Löschen" [ref=e81]':
+            - cell "E2E Test Anna Schmidt" [ref=e82]
+            - cell "#EC4899" [ref=e83]:
+              - generic [ref=e86]: "#EC4899"
+            - cell "Aktiv" [ref=e87]:
+              - generic [ref=e88]: Aktiv
+            - cell "0" [ref=e89]
+            - cell "Bearbeiten Löschen" [ref=e90]:
+              - generic [ref=e91]:
+                - link "Bearbeiten" [ref=e92] [cursor=pointer]:
+                  - /url: /providers/9181082d-85b1-4726-8a0f-4c6634337e93
+                - button "Löschen" [ref=e93] [cursor=pointer]
+```
