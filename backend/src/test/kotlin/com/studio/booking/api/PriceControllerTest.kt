@@ -43,12 +43,22 @@ class PriceControllerTest {
             hourlyRate = BigDecimal("70.00"),
         )
     private val upgrade =
-        Upgrade(id = UUID.fromString("33333333-3333-3333-3333-333333333333"), name = "Test Upgrade", price = BigDecimal("20.00"))
+        Upgrade(
+            id = UUID.fromString("33333333-3333-3333-3333-333333333333"),
+            name = "Test Upgrade",
+            price = BigDecimal("20.00"),
+        )
 
     @Test
     fun `getRoomPriceHistory should return price history`() {
         val now = OffsetDateTime.now()
-        val price1 = RoomPrice(room = room, price = BigDecimal("70.00"), validFrom = now.minusDays(30), validTo = now.minusDays(15))
+        val price1 =
+            RoomPrice(
+                room = room,
+                price = BigDecimal("70.00"),
+                validFrom = now.minusDays(30),
+                validTo = now.minusDays(15),
+            )
         val price2 = RoomPrice(room = room, price = BigDecimal("75.00"), validFrom = now.minusDays(15), validTo = null)
 
         whenever(priceService.getRoomPriceHistory(room.id)).thenReturn(listOf(price2, price1))
@@ -63,7 +73,13 @@ class PriceControllerTest {
     @Test
     fun `getCurrentRoomPrice should return current price when found`() {
         val now = OffsetDateTime.now()
-        val currentPrice = RoomPrice(room = room, price = BigDecimal("75.00"), validFrom = now.minusDays(15), validTo = null)
+        val currentPrice =
+            RoomPrice(
+                room = room,
+                price = BigDecimal("75.00"),
+                validFrom = now.minusDays(15),
+                validTo = null,
+            )
 
         whenever(priceService.getCurrentRoomPrice(room.id)).thenReturn(currentPrice)
 
@@ -83,7 +99,13 @@ class PriceControllerTest {
     @Test
     fun `getRoomPriceAt should return price at timestamp when found`() {
         val timestamp = OffsetDateTime.now().minusDays(10)
-        val price = RoomPrice(room = room, price = BigDecimal("75.00"), validFrom = OffsetDateTime.now().minusDays(15), validTo = null)
+        val price =
+            RoomPrice(
+                room = room,
+                price = BigDecimal("75.00"),
+                validFrom = OffsetDateTime.now().minusDays(15),
+                validTo = null,
+            )
 
         whenever(priceService.getRoomPriceAt(room.id, timestamp)).thenReturn(price)
 
@@ -129,8 +151,19 @@ class PriceControllerTest {
     fun `getUpgradePriceHistory should return price history`() {
         val now = OffsetDateTime.now()
         val price1 =
-            UpgradePrice(upgrade = upgrade, price = BigDecimal("20.00"), validFrom = now.minusDays(30), validTo = now.minusDays(15))
-        val price2 = UpgradePrice(upgrade = upgrade, price = BigDecimal("25.00"), validFrom = now.minusDays(15), validTo = null)
+            UpgradePrice(
+                upgrade = upgrade,
+                price = BigDecimal("20.00"),
+                validFrom = now.minusDays(30),
+                validTo = now.minusDays(15),
+            )
+        val price2 =
+            UpgradePrice(
+                upgrade = upgrade,
+                price = BigDecimal("25.00"),
+                validFrom = now.minusDays(15),
+                validTo = null,
+            )
 
         whenever(priceService.getUpgradePriceHistory(upgrade.id)).thenReturn(listOf(price2, price1))
 
@@ -144,7 +177,13 @@ class PriceControllerTest {
     @Test
     fun `getCurrentUpgradePrice should return current price when found`() {
         val now = OffsetDateTime.now()
-        val currentPrice = UpgradePrice(upgrade = upgrade, price = BigDecimal("25.00"), validFrom = now.minusDays(15), validTo = null)
+        val currentPrice =
+            UpgradePrice(
+                upgrade = upgrade,
+                price = BigDecimal("25.00"),
+                validFrom = now.minusDays(15),
+                validTo = null,
+            )
 
         whenever(priceService.getCurrentUpgradePrice(upgrade.id)).thenReturn(currentPrice)
 
@@ -165,7 +204,12 @@ class PriceControllerTest {
     fun `getUpgradePriceAt should return price at timestamp when found`() {
         val timestamp = OffsetDateTime.now().minusDays(10)
         val price =
-            UpgradePrice(upgrade = upgrade, price = BigDecimal("25.00"), validFrom = OffsetDateTime.now().minusDays(15), validTo = null)
+            UpgradePrice(
+                upgrade = upgrade,
+                price = BigDecimal("25.00"),
+                validFrom = OffsetDateTime.now().minusDays(15),
+                validTo = null,
+            )
 
         whenever(priceService.getUpgradePriceAt(upgrade.id, timestamp)).thenReturn(price)
 

@@ -8,7 +8,6 @@ import com.studio.booking.repository.BillingItemRepository
 import com.studio.booking.repository.BillingRepository
 import com.studio.booking.repository.BookingRepository
 import com.studio.booking.repository.RoomPriceRepository
-import com.studio.booking.repository.ServiceProviderRepository
 import com.studio.booking.repository.UpgradePriceRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,7 +21,6 @@ class BillingService(
     private val billingRepository: BillingRepository,
     private val billingItemRepository: BillingItemRepository,
     private val bookingRepository: BookingRepository,
-    private val serviceProviderRepository: ServiceProviderRepository,
     private val roomPriceRepository: RoomPriceRepository,
     private val upgradePriceRepository: UpgradePriceRepository,
     private val priceCalculationService: PriceCalculationService,

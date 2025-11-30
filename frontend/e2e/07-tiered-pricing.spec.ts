@@ -129,7 +129,7 @@ test.describe('UC-10: Preisstaffeln', () => {
 
     // Create tier via API
     await page.request.post(
-      `${API_BASE}/rooms/${room.id}/prices/${currentPrice.id}/tiers`,
+      `${API_BASE}/prices/${currentPrice.id}/tiers`,
       {
         data: {
           fromMinutes: 0,
@@ -224,7 +224,7 @@ test.describe('UC-10: Preisstaffeln', () => {
 
     // Create tiers with different time formats
     await page.request.post(
-      `${API_BASE}/rooms/${room.id}/prices/${currentPrice.id}/tiers`,
+      `${API_BASE}/prices/${currentPrice.id}/tiers`,
       {
         data: {
           fromMinutes: 0,
@@ -237,7 +237,7 @@ test.describe('UC-10: Preisstaffeln', () => {
     )
 
     await page.request.post(
-      `${API_BASE}/rooms/${room.id}/prices/${currentPrice.id}/tiers`,
+      `${API_BASE}/prices/${currentPrice.id}/tiers`,
       {
         data: {
           fromMinutes: 15,
@@ -250,7 +250,7 @@ test.describe('UC-10: Preisstaffeln', () => {
     )
 
     await page.request.post(
-      `${API_BASE}/rooms/${room.id}/prices/${currentPrice.id}/tiers`,
+      `${API_BASE}/prices/${currentPrice.id}/tiers`,
       {
         data: {
           fromMinutes: 60,
@@ -281,7 +281,7 @@ test.describe('UC-10: Preisstaffeln', () => {
 
     // Create tier
     await page.request.post(
-      `${API_BASE}/rooms/${room.id}/prices/${currentPrice.id}/tiers`,
+      `${API_BASE}/prices/${currentPrice.id}/tiers`,
       {
         data: {
           fromMinutes: 0,
@@ -327,7 +327,7 @@ test.describe('UC-10: Preisstaffeln', () => {
 
     // Tier 1: 0-30 min = 75€ FIXED
     await page.request.post(
-      `${API_BASE}/rooms/${room.id}/prices/${currentPrice.id}/tiers`,
+      `${API_BASE}/prices/${currentPrice.id}/tiers`,
       {
         data: {
           fromMinutes: 0,
@@ -341,7 +341,7 @@ test.describe('UC-10: Preisstaffeln', () => {
 
     // Tier 2: 30+ min = 120€/hour HOURLY
     await page.request.post(
-      `${API_BASE}/rooms/${room.id}/prices/${currentPrice.id}/tiers`,
+      `${API_BASE}/prices/${currentPrice.id}/tiers`,
       {
         data: {
           fromMinutes: 30,

@@ -1,7 +1,6 @@
 package com.studio.booking.api
 
 import com.studio.booking.domain.PriceType
-import com.studio.booking.service.PriceCalculationService
 import com.studio.booking.service.PriceTierService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -18,15 +17,13 @@ import java.util.UUID
 @RequestMapping("/api")
 class PriceTierController(
     private val priceTierService: PriceTierService,
-    private val priceCalculationService: PriceCalculationService,
 ) {
     /**
-     * GET /api/rooms/{roomId}/prices/{priceId}/tiers
+     * GET /api/prices/{priceId}/tiers
      * Get all price tiers for a room price
      */
-    @GetMapping("/rooms/{roomId}/prices/{priceId}/tiers")
+    @GetMapping("/prices/{priceId}/tiers")
     fun getRoomPriceTiers(
-        @PathVariable roomId: UUID,
         @PathVariable priceId: UUID,
     ): ResponseEntity<List<RoomPriceTierDto>> {
         val tiers = priceTierService.getRoomPriceTiers(priceId)
@@ -34,12 +31,11 @@ class PriceTierController(
     }
 
     /**
-     * POST /api/rooms/{roomId}/prices/{priceId}/tiers
+     * POST /api/prices/{priceId}/tiers
      * Create a new price tier
      */
-    @PostMapping("/rooms/{roomId}/prices/{priceId}/tiers")
+    @PostMapping("/prices/{priceId}/tiers")
     fun createPriceTier(
-        @PathVariable roomId: UUID,
         @PathVariable priceId: UUID,
         @RequestBody request: CreatePriceTierRequest,
     ): ResponseEntity<RoomPriceTierDto> {
@@ -47,7 +43,7 @@ class PriceTierController(
             try {
                 PriceType.valueOf(request.priceType.uppercase())
             } catch (e: IllegalArgumentException) {
-                throw IllegalArgumentException("Invalid price type: ${request.priceType}. Must be FIXED or HOURLY")
+                throw IllegalArgumentException("Invalid price type: ${request.priceType}. Must be FIXED or HOURLY", e)
             }
 
         val tier =
@@ -64,13 +60,11 @@ class PriceTierController(
     }
 
     /**
-     * PUT /api/rooms/{roomId}/prices/{priceId}/tiers/{tierId}
+     * PUT /api/tiers/{tierId}
      * Update an existing price tier
      */
-    @PutMapping("/rooms/{roomId}/prices/{priceId}/tiers/{tierId}")
+    @PutMapping("/tiers/{tierId}")
     fun updatePriceTier(
-        @PathVariable roomId: UUID,
-        @PathVariable priceId: UUID,
         @PathVariable tierId: UUID,
         @RequestBody request: UpdatePriceTierRequest,
     ): ResponseEntity<RoomPriceTierDto> {
@@ -78,7 +72,7 @@ class PriceTierController(
             try {
                 PriceType.valueOf(request.priceType.uppercase())
             } catch (e: IllegalArgumentException) {
-                throw IllegalArgumentException("Invalid price type: ${request.priceType}. Must be FIXED or HOURLY")
+                throw IllegalArgumentException("Invalid price type: ${request.priceType}. Must be FIXED or HOURLY", e)
             }
 
         val tier =
@@ -95,13 +89,11 @@ class PriceTierController(
     }
 
     /**
-     * DELETE /api/rooms/{roomId}/prices/{priceId}/tiers/{tierId}
+     * DELETE /api/tiers/{tierId}
      * Delete a price tier
      */
-    @DeleteMapping("/rooms/{roomId}/prices/{priceId}/tiers/{tierId}")
+    @DeleteMapping("/tiers/{tierId}")
     fun deletePriceTier(
-        @PathVariable roomId: UUID,
-        @PathVariable priceId: UUID,
         @PathVariable tierId: UUID,
     ): ResponseEntity<Void> {
         priceTierService.deletePriceTier(tierId)

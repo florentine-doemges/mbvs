@@ -48,9 +48,6 @@ class BillingServiceTest {
     private lateinit var bookingRepository: BookingRepository
 
     @Mock
-    private lateinit var serviceProviderRepository: ServiceProviderRepository
-
-    @Mock
     private lateinit var roomPriceRepository: RoomPriceRepository
 
     @Mock
@@ -80,7 +77,6 @@ class BillingServiceTest {
                 billingRepository,
                 billingItemRepository,
                 bookingRepository,
-                serviceProviderRepository,
                 roomPriceRepository,
                 upgradePriceRepository,
                 priceCalculationService,

@@ -343,17 +343,16 @@ export async function addUpgradePrice(upgradeId: string, price: number, validFro
 }
 
 // Price Tiers
-export async function fetchPriceTiers(roomId: string, priceId: string): Promise<RoomPriceTier[]> {
-  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers`)
+export async function fetchPriceTiers(priceId: string): Promise<RoomPriceTier[]> {
+  const response = await fetch(`${API_BASE}/prices/${priceId}/tiers`)
   return handleResponse<RoomPriceTier[]>(response)
 }
 
 export async function createPriceTier(
-  roomId: string,
   priceId: string,
   request: CreatePriceTierRequest
 ): Promise<RoomPriceTier> {
-  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers`, {
+  const response = await fetch(`${API_BASE}/prices/${priceId}/tiers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -362,12 +361,10 @@ export async function createPriceTier(
 }
 
 export async function updatePriceTier(
-  roomId: string,
-  priceId: string,
   tierId: string,
   request: UpdatePriceTierRequest
 ): Promise<RoomPriceTier> {
-  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers/${tierId}`, {
+  const response = await fetch(`${API_BASE}/tiers/${tierId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(request),
@@ -375,12 +372,8 @@ export async function updatePriceTier(
   return handleResponse<RoomPriceTier>(response)
 }
 
-export async function deletePriceTier(
-  roomId: string,
-  priceId: string,
-  tierId: string
-): Promise<void> {
-  const response = await fetch(`${API_BASE}/rooms/${roomId}/prices/${priceId}/tiers/${tierId}`, {
+export async function deletePriceTier(tierId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/tiers/${tierId}`, {
     method: 'DELETE',
   })
   if (!response.ok) {

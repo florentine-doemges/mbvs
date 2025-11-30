@@ -121,7 +121,6 @@ class PriceCalculationService(
      * Useful for UI display
      */
     fun calculatePricePreview(
-        roomPriceId: UUID,
         roomPrice: RoomPrice,
     ): Map<Int, BigDecimal> {
         val previewDurations = listOf(15, 30, 60, 90, 120, 180, 240)

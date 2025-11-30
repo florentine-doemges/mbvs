@@ -150,7 +150,9 @@ open class DurationOptionService(
         stepMinutes: Int?,
     ) {
         if (minMinutes == null || maxMinutes == null || stepMinutes == null) {
-            throw IllegalArgumentException("Für variable Dauern müssen Minimum, Maximum und Schrittweite angegeben werden")
+            throw IllegalArgumentException(
+                "Für variable Dauern müssen Minimum, Maximum und Schrittweite angegeben werden",
+            )
         }
         if (minMinutes <= 0) {
             throw IllegalArgumentException("Minimum muss größer als 0 sein")

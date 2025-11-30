@@ -5,7 +5,7 @@ import type { CreatePriceTierRequest, UpdatePriceTierRequest } from '../api/type
 export function usePriceTiers(roomId: string, priceId: string) {
   return useQuery({
     queryKey: ['priceTiers', roomId, priceId],
-    queryFn: () => api.fetchPriceTiers(roomId, priceId),
+    queryFn: () => api.fetchPriceTiers(priceId),
     enabled: !!roomId && !!priceId,
   })
 }
@@ -22,7 +22,7 @@ export function useCreatePriceTier(roomId: string, priceId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (request: CreatePriceTierRequest) =>
-      api.createPriceTier(roomId, priceId, request),
+      api.createPriceTier(priceId, request),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['priceTiers', roomId, priceId] })
       void queryClient.invalidateQueries({ queryKey: ['pricePreview', roomId, priceId] })
@@ -34,7 +34,7 @@ export function useUpdatePriceTier(roomId: string, priceId: string, tierId: stri
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (request: UpdatePriceTierRequest) =>
-      api.updatePriceTier(roomId, priceId, tierId, request),
+      api.updatePriceTier(tierId, request),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['priceTiers', roomId, priceId] })
       void queryClient.invalidateQueries({ queryKey: ['pricePreview', roomId, priceId] })
@@ -45,7 +45,7 @@ export function useUpdatePriceTier(roomId: string, priceId: string, tierId: stri
 export function useDeletePriceTier(roomId: string, priceId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (tierId: string) => api.deletePriceTier(roomId, priceId, tierId),
+    mutationFn: (tierId: string) => api.deletePriceTier(tierId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['priceTiers', roomId, priceId] })
       void queryClient.invalidateQueries({ queryKey: ['pricePreview', roomId, priceId] })
