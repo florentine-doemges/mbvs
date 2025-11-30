@@ -300,11 +300,14 @@ export async function fetchCurrentRoomPrice(roomId: string): Promise<RoomPrice |
   return handleResponse<RoomPrice>(response)
 }
 
-export async function addRoomPrice(roomId: string, price: number): Promise<RoomPrice> {
+export async function addRoomPrice(roomId: string, price: number, validFrom?: string): Promise<RoomPrice> {
   const response = await fetch(`${API_BASE}/rooms/${roomId}/prices`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ price }),
+    body: JSON.stringify({
+      price,
+      validFrom: validFrom || new Date().toISOString()
+    }),
   })
   return handleResponse<RoomPrice>(response)
 }
@@ -323,11 +326,14 @@ export async function fetchCurrentUpgradePrice(upgradeId: string): Promise<Upgra
   return handleResponse<UpgradePrice>(response)
 }
 
-export async function addUpgradePrice(upgradeId: string, price: number): Promise<UpgradePrice> {
+export async function addUpgradePrice(upgradeId: string, price: number, validFrom?: string): Promise<UpgradePrice> {
   const response = await fetch(`${API_BASE}/upgrades/${upgradeId}/prices`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ price }),
+    body: JSON.stringify({
+      price,
+      validFrom: validFrom || new Date().toISOString()
+    }),
   })
   return handleResponse<UpgradePrice>(response)
 }
