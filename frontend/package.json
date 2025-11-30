@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.17.9",
@@ -21,8 +25,10 @@
     "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.2.0",
     "@testing-library/react": "^14.1.2",
+    "@types/node": "^24.10.1",
     "@types/react": "^18.2.48",
     "@types/react-dom": "^18.2.18",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
